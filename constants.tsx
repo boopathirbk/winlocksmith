@@ -30,8 +30,15 @@ import {
   UserX,
   Puzzle,
   Printer,
-  UploadCloud
+  UploadCloud,
+  User,
+  Linkedin,
+  Github,
+  ExternalLink,
+  Mail,
+  Phone
 } from 'lucide-react';
+
 
 export const ICONS = {
   Shield,
@@ -65,7 +72,13 @@ export const ICONS = {
   UserX,
   Puzzle,
   Printer,
-  UploadCloud
+  UploadCloud,
+  User,
+  Linkedin,
+  Github,
+  ExternalLink,
+  Mail,
+  Phone
 };
 
 export const COMMON_BROWSERS = [

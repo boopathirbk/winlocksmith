@@ -37,7 +37,7 @@ const App: React.FC = () => {
       }
     );
 
-    const sections = ['system', 'kiosk', 'web', 'advanced', 'faq', 'script'];
+    const sections = ['system', 'kiosk', 'web', 'advanced', 'faq', 'script', 'author'];
     sections.forEach(id => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
@@ -245,6 +245,7 @@ IMPORTANT NOTES:
           <div className="my-2 border-t border-slate-800/50"></div>
 
           <NavButton id="faq" icon={ICONS.HelpCircle} label="FAQ & Help" />
+          <NavButton id="author" icon={ICONS.User} label="About Author" />
           <NavButton id="script" icon={ICONS.Terminal} label="Script Output" />
 
           <div className="pt-4 mt-4 border-t border-slate-800">
@@ -1069,7 +1070,69 @@ IMPORTANT NOTES:
             </div>
           </section>
 
-          {/* SECTION 6: SCRIPT PREVIEW */}
+          {/* SECTION 6: AUTHOR */}
+          <section id="author" className="space-y-6">
+            <div className="flex flex-col gap-2 border-b border-slate-800 pb-4">
+              <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                <ICONS.User className="w-8 h-8 text-pink-400" /> About the Author
+              </h2>
+              <p className="text-slate-400">Connect with the creator of WinLocksmith.</p>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 flex flex-col md:flex-row items-center gap-8">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
+                <span className="text-4xl font-bold text-white">BR</span>
+              </div>
+
+              <div className="text-center md:text-left space-y-4 flex-1">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Boopathi R</h3>
+                  <p className="text-cyan-400 font-medium">Full Stack Developer & SysAdmin</p>
+                </div>
+
+                <div className="flex flex-col gap-2 text-slate-400 items-center md:items-start text-sm">
+                  <div className="flex items-center gap-2 hover:text-white transition-colors">
+                    <ICONS.Mail className="w-4 h-4 text-pink-400" />
+                    <a href="mailto:boopathirbk77@gmail.com">boopathirbk77@gmail.com</a>
+                  </div>
+                  <div className="flex items-center gap-2 hover:text-white transition-colors">
+                    <ICONS.Phone className="w-4 h-4 text-pink-400" />
+                    <a href="tel:+917395845142">+91 7395845142</a>
+                  </div>
+                </div>
+
+                <p className="text-slate-400 max-w-lg">
+                  Passionate about building tools that simplify system administration and enhance security.
+                  Check out my portfolio and other projects.
+                </p>
+
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
+                  <a href="https://boopathirbk.github.io/bresume/" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-700 hover:border-cyan-500/50">
+                    <ICONS.Globe className="w-4 h-4 text-cyan-400" />
+                    <span>Portfolio</span>
+                    <ICONS.ExternalLink className="w-3 h-3 text-slate-500 ml-1" />
+                  </a>
+
+                  <a href="https://www.linkedin.com/in/boopathirb" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-[#0077b5]/20 text-white rounded-lg transition-colors border border-slate-700 hover:border-[#0077b5]/50 group">
+                    <ICONS.Linkedin className="w-4 h-4 text-[#0077b5] group-hover:text-white transition-colors" />
+                    <span>LinkedIn</span>
+                    <ICONS.ExternalLink className="w-3 h-3 text-slate-500 ml-1" />
+                  </a>
+
+                  <a href="https://github.com/boopathirbk" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-700 hover:border-white/50">
+                    <ICONS.Github className="w-4 h-4" />
+                    <span>GitHub</span>
+                    <ICONS.ExternalLink className="w-3 h-3 text-slate-500 ml-1" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 7: SCRIPT PREVIEW OLD 6 */}
           <section id="script" className="space-y-6 pb-20">
             <div className="flex flex-col gap-2 border-b border-slate-800 pb-4">
               <h2 className="text-3xl font-bold text-white flex items-center gap-3">
