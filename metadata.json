@@ -1,0 +1,5 @@
+{
+  "name": "WinLocksmith",
+  "description": "A powerful tool to generate PowerShell scripts for Windows system hardening, kiosk mode, and access control. Create customized restriction policies for USB, Applications, and Web browsing.",
+  "requestFramePermissions": []
+}
