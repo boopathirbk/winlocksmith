@@ -5,8 +5,8 @@ const FAQ: React.FC = () => {
     return (
         <div className="py-12 px-4 max-w-3xl mx-auto space-y-8">
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold text-white mb-4">Frequently Asked Questions</h1>
-                <p className="text-slate-400">Common questions about WinLocksmith and troubleshooting.</p>
+                <h1 className="text-4xl font-bold dark:text-white text-slate-900 mb-4">Frequently Asked Questions</h1>
+                <p className="dark:text-slate-400 text-slate-600">Common questions about WinLocksmith and troubleshooting.</p>
             </div>
 
             <div className="space-y-6">
@@ -17,7 +17,7 @@ const FAQ: React.FC = () => {
                 />
 
                 <FAQItem
-                    question="Why does the script script require Administrator privileges?"
+                    question="Why does the script require Administrator privileges?"
                     answer="WinLocksmith modifies System Registry keys (HKLM) and Software Restriction Policies to enforce security. These are protected system areas that only Administrators can modify."
                     icon={<ICONS.ShieldAlert className="w-5 h-5 text-yellow-400" />}
                 />
@@ -31,7 +31,7 @@ const FAQ: React.FC = () => {
                 <FAQItem
                     question="Is it safe? Does it send data to the cloud?"
                     answer="It is 100% safe and offline. The logic runs entirely in your browser. The generated `.ps1` script is plain text that you can inspect before running. No telemetry or data is sent to us."
-                    icon={<ICONS.WifiOff className="w-5 h-5 text-slate-400" />}
+                    icon={<ICONS.WifiOff className="w-5 h-5 dark:text-slate-400 text-slate-500" />}
                 />
             </div>
 
@@ -40,11 +40,11 @@ const FAQ: React.FC = () => {
 };
 
 const FAQItem = ({ question, answer, icon }: any) => (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white flex items-center gap-3 mb-3">
+    <div className="dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 border rounded-xl p-6 shadow-sm">
+        <h3 className="text-lg font-bold dark:text-white text-slate-900 flex items-center gap-3 mb-3">
             {icon} {question}
         </h3>
-        <p className="text-slate-400 leading-relaxed text-sm pl-8">
+        <p className="dark:text-slate-400 text-slate-600 leading-relaxed text-sm pl-8">
             {answer}
         </p>
     </div>
