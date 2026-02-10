@@ -36,7 +36,8 @@ import {
   Github,
   ExternalLink,
   Mail,
-  Phone
+  Phone,
+  Sun
 } from 'lucide-react';
 
 
@@ -61,6 +62,7 @@ export const ICONS = {
   Activity,
   Monitor,
   Moon,
+  Sun,
   BellOff,
   MousePointer2,
   RefreshCwOff,
