@@ -122,8 +122,7 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
 
     # [Kiosk] Startup Behavior
     # 4 = Open a list of URLs
-    # [Kiosk] Startup Behavior & Home Page
-    # [Kiosk] Startup Behavior & Home Page
+
     ${web.forceStartup ? `
     # [Strict Mode] Force Startup Pages & Home
     Set-RegKey -Path "${EdgePol}" -Name "RestoreOnStartup" -Value 4

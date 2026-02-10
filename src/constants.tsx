@@ -35,9 +35,15 @@ import {
   Linkedin,
   Github,
   ExternalLink,
-  Mail,
   Phone,
-  Sun
+  Sun,
+  CreditCard,
+  RotateCcw,
+  ShieldAlert,
+  WifiOff,
+  Mail,
+  MapPin,
+  Heart
 } from 'lucide-react';
 
 
@@ -80,7 +86,13 @@ export const ICONS = {
   Github,
   ExternalLink,
   Mail,
-  Phone
+  Phone,
+  CreditCard,
+  RotateCcw,
+  ShieldAlert,
+  WifiOff,
+  MapPin,
+  Heart
 };
 
 export const COMMON_BROWSERS = [
