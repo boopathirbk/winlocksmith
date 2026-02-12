@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg) ![Windows](https://img.shields.io/badge/Platform-Windows_10%2F11-0078D6.svg) ![Tech](https://img.shields.io/badge/Built_With-React_Request_TS-61DAFB.svg)
 
-**WinLocksmith** is a powerful, open-source web application designed for System Administrators and IT Professionals to generate robust PowerShell configuration scripts for Windows 10 and 11 without needing to use Intune, MDM or any other Windows OS policy Provider. 
+**WinLocksmith** is a powerful, open-source web application designed for System Administrators and IT Professionals to generate robust PowerShell configuration scripts for Windows 10 and Windows 11 without needing to use Intune, MDM or any other Windows OS policy Provider. 
 
 Whether you need to secure a public kiosk, lock down employee workstations, or harden a BYOD device, WinLocksmith generates a deployable ZIP bundle with a single click.
 

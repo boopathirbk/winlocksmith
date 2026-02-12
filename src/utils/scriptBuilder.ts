@@ -202,6 +202,12 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
     Remove-RegValue -Path "${EdgePol}" -Name "PasswordManagerEnabled"
     Remove-RegValue -Path "${EdgePol}" -Name "AutofillCreditCardEnabled"
     Remove-RegValue -Path "${EdgePol}" -Name "AllowFileSelectionDialogs"
+
+    # Remove SmartScreen Enforcement
+    Remove-RegValue -Path "${EdgePol}" -Name "SmartScreenEnabled"
+    Remove-RegValue -Path "${EdgePol}" -Name "SmartScreenPuaEnabled"
+    Remove-RegValue -Path "${EdgePol}" -Name "PreventSmartScreenPromptOverride"
+    Remove-RegValue -Path "${EdgePol}" -Name "PreventSmartScreenPromptOverrideForFiles"
 `;
     }
 
@@ -500,7 +506,8 @@ foreach ($User in $TargetUsers) {
 Write-Host ""
 Write-Host "--- Configuring Machine-Wide Policies ---" -ForegroundColor Cyan
 
-# Store Policy (Robust Block for Pro/Ent)
+# Store Policy (RemoveWindowsStore only enforced on Enterprise/Education editions;
+# For Home/Pro, the DisallowRun fallback blocks Store executables at user level)
 ${isLock && system.blockStore ? `
 Write-Host "[*] Disabling Windows Store & Consumer Features..." -ForegroundColor Yellow
 Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore" -Value 1
@@ -532,7 +539,8 @@ Write-Host "[*] Restoring Updates..." -ForegroundColor Green
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU" -Name "NoAutoUpdate"
 `}
 
-# Telemetry
+# Telemetry (Value 0 = Security/Off. Fully enforced on Enterprise/Education only;
+# on Home/Pro, value 0 degrades to Basic/Required level — still reduces telemetry significantly)
 ${isLock && kiosk.disableTelemetry ? `
 Write-Host "[*] Disabling Telemetry..." -ForegroundColor Yellow
 Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry" -Value 0
@@ -544,10 +552,16 @@ Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollec
 # Power
 ${isLock && kiosk.disableSleep ? `
 Write-Host "[*] Disabling Sleep Mode..." -ForegroundColor Yellow
-powercfg -change -monitor-timeout-ac 0; powercfg -h off
+powercfg -change -monitor-timeout-ac 0
+powercfg -change -monitor-timeout-dc 0
+powercfg -change -standby-timeout-ac 0
+powercfg -change -standby-timeout-dc 0
+powercfg -h off
 ` : `
 Write-Host "[*] Restoring Sleep Mode..." -ForegroundColor Green
-powercfg -change -monitor-timeout-ac 15; powercfg -h on
+# Restore Balanced power scheme defaults instead of hardcoded values
+powercfg -restoredefaultschemes
+powercfg -h on
 `}
 
 # --- 3. EXECUTION CONTROL (SRP) ---
@@ -579,6 +593,7 @@ if (-not $IsHome) {
 Write-Host "[*] Removing Software Restriction Policies..." -ForegroundColor Green
 Set-RegKey -Path $SRP -Name "TransparentEnabled" -Value 0
 Remove-RegValue -Path $SRP -Name "PolicyScope"
+Remove-RegValue -Path $SRP -Name "DefaultLevel"
 # Remove ALL path rules (both DisallowRun and AllowedPaths)
 if(Test-Path "$SRP\\0\\Paths") { Remove-Item "$SRP\\0\\Paths\\*" -Recurse -Force -ErrorAction SilentlyContinue }
 if(Test-Path "$SRP\\262144\\Paths") { Remove-Item "$SRP\\262144\\Paths\\*" -Recurse -Force -ErrorAction SilentlyContinue }
