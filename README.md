@@ -1,6 +1,6 @@
 # WinLocksmith 🔒
 
-**The Ultimate Windows System Hardening & Kiosk Generator**
+**The Ultimate Windows OS System Hardening for Work Computers / Kiosk & BYOD Devices**
 
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg) ![Windows](https://img.shields.io/badge/Platform-Windows_10%2F11-0078D6.svg) ![Tech](https://img.shields.io/badge/Built_With-React_Request_TS-61DAFB.svg)
 
