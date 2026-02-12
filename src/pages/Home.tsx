@@ -4,85 +4,121 @@ import { ICONS } from '../constants';
 
 const Home: React.FC = () => {
     return (
-        <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
+        <div className="relative">
+            {/* Background effects */}
+            <div className="hero-glow absolute inset-0 pointer-events-none" />
+            <div className="dot-grid absolute inset-0 pointer-events-none" />
 
-            {/* Hero Section */}
-            <section className="text-center space-y-6">
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600 pb-2">
-                    WinLocksmith
-                </h1>
-                <p className="text-xl md:text-2xl dark:text-slate-500 text-slate-600 max-w-3xl mx-auto">
-                    The ultimate open-source alternative to Intune. Generate powerful Windows hardening scripts, configure Kiosk modes, and secure your systems in seconds.
-                </p>
-                <div className="flex justify-center gap-4 pt-4">
-                    <Link to="/config" className="flex items-center gap-2 px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20 transition-all hover:scale-105">
-                        <ICONS.Wand2 className="w-6 h-6" /> Start Configuring
-                    </Link>
-                    <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noreferrer" className="flex items-center gap-2 px-8 py-4 dark:bg-slate-800 bg-white dark:hover:bg-slate-700 hover:bg-slate-100 dark:text-white text-slate-900 rounded-xl font-bold text-lg border dark:border-slate-700 border-slate-300 transition-all">
-                        <ICONS.Github className="w-6 h-6" /> View Source
-                    </a>
-                </div>
-            </section>
+            <div className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-24">
 
-            {/* Features Grid */}
-            <section className="grid md:grid-cols-3 gap-8">
-                <FeatureCard
-                    icon={<ICONS.Shield className="w-10 h-10 text-cyan-400" />}
-                    title="System Hardening"
-                    description="Disable Windows Update, Telemetry, and Sleep. Enforce SmartScreen and block administrative tools like RegEdit and CMD."
-                />
-                <FeatureCard
-                    icon={<ICONS.Monitor className="w-10 h-10 text-pink-400" />}
-                    title="Kiosk Mode"
-                    description="Turn any Windows PC into a focused Kiosk. Whitelist specific websites, block file uploads, and restrict peripheral access."
-                />
-                <FeatureCard
-                    icon={<ICONS.Lock className="w-10 h-10 text-emerald-400" />}
-                    title="Access Control"
-                    description="Block USB drives, Microsoft Store, and specific applications. Prevent unauthorized Admin elevation."
-                />
-            </section>
+                {/* Hero */}
+                <section className="text-center space-y-8 animate-fade-up">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide dark:bg-zinc-800/60 bg-zinc-100 dark:text-zinc-400 text-zinc-600 border dark:border-zinc-700/50 border-zinc-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Open Source · Offline · Free
+                    </div>
 
-            {/* SEO Content */}
-            <section className="max-w-none">
-                <h2 className="text-3xl font-bold text-center mb-8 dark:text-white text-slate-900">Why WinLocksmith?</h2>
-                <div className="grid md:grid-cols-2 gap-12">
-                    <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2 dark:text-white text-slate-900"><ICONS.CheckCircle2 className="text-green-400" /> Offline & Private</h3>
-                        <p className="dark:text-slate-400 text-slate-600">
-                            WinLocksmith runs entirely in your browser. No data is sent to the cloud. You get a downloadable PowerShell script (.ps1) that you can inspect and run offline on any machine.
-                        </p>
+                    <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tighter leading-[1.05]">
+                        <span className="dark:text-white text-zinc-900">Win</span>
+                        <span className="bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">Locksmith</span>
+                    </h1>
+
+                    <p className="text-lg md:text-xl dark:text-zinc-500 text-zinc-500 max-w-2xl mx-auto leading-relaxed font-light">
+                        The open-source alternative to Intune. Generate powerful Windows hardening scripts, create kiosk modes, and secure systems — all from your browser.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+                        <Link to="/config" className="group inline-flex items-center justify-center gap-2.5 px-7 py-3 bg-white dark:bg-white text-zinc-900 rounded-xl font-semibold text-sm shadow-lg shadow-black/5 dark:shadow-white/5 transition-all duration-300 hover:shadow-xl hover:shadow-sky-500/10 hover:scale-[1.02] active:scale-[0.98]">
+                            <ICONS.Wand2 className="w-4 h-4 transition-transform group-hover:rotate-12" /> Start Configuring
+                        </Link>
+                        <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2.5 px-7 py-3 dark:bg-zinc-800/60 bg-zinc-100 dark:text-zinc-300 text-zinc-700 rounded-xl font-semibold text-sm border dark:border-zinc-700/50 border-zinc-200 transition-all duration-300 hover:dark:bg-zinc-800 hover:bg-zinc-200 active:scale-[0.98]">
+                            <ICONS.Github className="w-4 h-4" /> View Source
+                        </a>
                     </div>
-                    <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2 dark:text-white text-slate-900"><ICONS.CheckCircle2 className="text-green-400" /> Edition Agnostic</h3>
-                        <p className="dark:text-slate-400 text-slate-600">
-                            Works on <strong>Windows Home, Pro, and Enterprise</strong>. We use intelligent fallbacks (like ICACLS permissions) for Home edition where Group Policy isn't available.
-                        </p>
+                </section>
+
+                {/* Feature Cards */}
+                <section className="grid md:grid-cols-3 gap-5">
+                    {[
+                        {
+                            icon: <ICONS.Shield className="w-5 h-5 text-sky-400" />,
+                            title: "System Hardening",
+                            description: "Disable updates, telemetry & sleep. Enforce SmartScreen and block admin tools like RegEdit and CMD.",
+                            gradient: "from-sky-500/10 to-transparent"
+                        },
+                        {
+                            icon: <ICONS.Monitor className="w-5 h-5 text-violet-400" />,
+                            title: "Kiosk Mode",
+                            description: "Turn any Windows PC into a focused kiosk. Whitelist sites, block uploads, restrict peripherals.",
+                            gradient: "from-violet-500/10 to-transparent"
+                        },
+                        {
+                            icon: <ICONS.Lock className="w-5 h-5 text-emerald-400" />,
+                            title: "Access Control",
+                            description: "Block USB drives, Store, and specific apps. Prevent unauthorized admin elevation.",
+                            gradient: "from-emerald-500/10 to-transparent"
+                        },
+                    ].map((card, i) => (
+                        <div key={i} className={`group relative dark:bg-zinc-900/50 bg-white p-7 rounded-2xl border dark:border-zinc-800/60 border-zinc-200 transition-all duration-300 hover:dark:border-zinc-700/80 hover:border-zinc-300 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-none`}
+                            style={{ animationDelay: `${i * 100}ms` }}
+                        >
+                            <div className={`absolute inset-0 bg-gradient-to-b ${card.gradient} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
+                            <div className="relative">
+                                <div className="w-10 h-10 rounded-xl dark:bg-zinc-800 bg-zinc-100 flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110">
+                                    {card.icon}
+                                </div>
+                                <h3 className="text-base font-semibold dark:text-white text-zinc-900 mb-2 tracking-tight">{card.title}</h3>
+                                <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed">{card.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </section>
+
+                {/* Why Section */}
+                <section>
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold dark:text-white text-zinc-900 tracking-tight">Why WinLocksmith?</h2>
+                        <p className="mt-3 dark:text-zinc-500 text-zinc-500 text-sm">Built for sysadmins, IT teams, and security-conscious organizations.</p>
                     </div>
-                    <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2 dark:text-white text-slate-900"><ICONS.CheckCircle2 className="text-green-400" /> Free & Open Source</h3>
-                        <p className="dark:text-slate-400 text-slate-600">
-                            A 100% free alternative to expensive MDM solutions like Microsoft Intune. Perfect for small businesses, schools, and IT admins.
-                        </p>
+
+                    <div className="grid sm:grid-cols-2 gap-6">
+                        {[
+                            {
+                                icon: <ICONS.WifiOff className="w-4 h-4" />,
+                                title: "Offline & Private",
+                                desc: "Runs entirely in your browser. No data sent to the cloud. Inspect the generated .ps1 before running."
+                            },
+                            {
+                                icon: <ICONS.CheckCircle2 className="w-4 h-4" />,
+                                title: "Edition Agnostic",
+                                desc: "Works on Windows Home, Pro, and Enterprise with intelligent fallbacks like ICACLS for Home edition."
+                            },
+                            {
+                                icon: <ICONS.Github className="w-4 h-4" />,
+                                title: "Free & Open Source",
+                                desc: "A 100% free alternative to expensive MDM solutions like Microsoft Intune."
+                            },
+                            {
+                                icon: <ICONS.RotateCcw className="w-4 h-4" />,
+                                title: "Fully Reversible",
+                                desc: "Every download includes a Restore.ps1 script. Made a mistake? Undo all changes instantly."
+                            },
+                        ].map((item, i) => (
+                            <div key={i} className="flex gap-4 p-5 rounded-xl dark:bg-zinc-900/30 bg-zinc-50 border dark:border-zinc-800/40 border-zinc-100 transition-colors hover:dark:border-zinc-700/60 hover:border-zinc-200">
+                                <div className="w-8 h-8 rounded-lg dark:bg-zinc-800 bg-white flex items-center justify-center shrink-0 dark:text-emerald-400 text-emerald-600 border dark:border-zinc-700/50 border-zinc-200">
+                                    {item.icon}
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold dark:text-white text-zinc-900 mb-1">{item.title}</h3>
+                                    <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2 dark:text-white text-slate-900"><ICONS.CheckCircle2 className="text-green-400" /> Reversible</h3>
-                        <p className="dark:text-slate-400 text-slate-600">
-                            Every download includes a Restore.ps1 script. Made a mistake? Run the restore script to reset all changes instantly.
-                        </p>
-                    </div>
-                </div>
-            </section>
+                </section>
+            </div>
         </div>
     );
 };
-
-const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
-    <div className="dark:bg-slate-900/50 bg-white p-8 rounded-2xl border dark:border-slate-800 border-slate-200 hover:border-cyan-500/30 transition-colors shadow-sm dark:shadow-none">
-        <div className="mb-4">{icon}</div>
-        <h3 className="text-xl font-bold dark:text-white text-slate-900 mb-2">{title}</h3>
-        <p className="dark:text-slate-400 text-slate-600 leading-relaxed">{description}</p>
-    </div>
-);
 
 export default Home;

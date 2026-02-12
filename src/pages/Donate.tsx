@@ -3,29 +3,35 @@ import { ICONS } from '../constants';
 
 const Donate: React.FC = () => {
     return (
-        <div className="py-20 px-4 max-w-2xl mx-auto text-center space-y-8">
-            <div className="dark:bg-slate-900/50 bg-white dark:border-slate-800 border-slate-200 border rounded-2xl p-12 shadow-lg dark:shadow-none">
-                <div className="w-20 h-20 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <ICONS.Heart className="w-10 h-10 text-pink-500 fill-pink-500 animate-pulse" />
-                </div>
+        <div className="py-20 px-4 max-w-lg mx-auto">
+            <div className="relative dark:bg-zinc-900/40 bg-white dark:border-zinc-800/40 border-zinc-200 border rounded-2xl p-10 text-center overflow-hidden">
 
-                <h1 className="text-3xl font-bold dark:text-white text-slate-900 mb-4">Support WinLocksmith</h1>
-                <p className="dark:text-slate-400 text-slate-600 mb-8 max-w-md mx-auto">
-                    WinLocksmith is free and open source. If this tool saved you time or money, consider buying me a coffee to support future development!
-                </p>
+                {/* Glow effect */}
+                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-60 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                <a
-                    href="https://paypal.me/boopathirbk"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-[#0070BA] hover:bg-[#003087] text-white rounded-xl font-bold text-lg transition-transform hover:scale-105 shadow-xl shadow-blue-900/30"
-                >
-                    <ICONS.CreditCard className="w-6 h-6" />
-                    Donate via PayPal
-                </a>
+                <div className="relative">
+                    <div className="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-rose-500/10">
+                        <ICONS.Heart className="w-7 h-7 text-rose-500 fill-rose-500" />
+                    </div>
 
-                <div className="mt-8 pt-8 border-t dark:border-slate-800 border-slate-200 text-sm dark:text-slate-500 text-slate-500">
-                    <p>Thank you for your support!</p>
+                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900 mb-3 tracking-tight">Support WinLocksmith</h1>
+                    <p className="dark:text-zinc-500 text-zinc-500 text-sm mb-8 max-w-sm mx-auto leading-relaxed">
+                        WinLocksmith is free and open source. If this tool saved you time or money, consider supporting future development.
+                    </p>
+
+                    <a
+                        href="https://paypal.me/boopathirbk"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2.5 px-7 py-3 bg-white dark:bg-white text-zinc-900 rounded-xl font-semibold text-sm shadow-lg shadow-black/5 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                        <ICONS.CreditCard className="w-4 h-4" />
+                        Donate via PayPal
+                    </a>
+
+                    <div className="mt-8 pt-6 border-t dark:border-zinc-800/30 border-zinc-200">
+                        <p className="text-xs dark:text-zinc-600 text-zinc-400">Thank you for your support ♥</p>
+                    </div>
                 </div>
             </div>
         </div>

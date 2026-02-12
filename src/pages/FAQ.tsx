@@ -3,48 +3,47 @@ import { ICONS } from '../constants';
 
 const FAQ: React.FC = () => {
     return (
-        <div className="py-12 px-4 max-w-3xl mx-auto space-y-8">
-            <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold dark:text-white text-slate-900 mb-4">Frequently Asked Questions</h1>
-                <p className="dark:text-slate-400 text-slate-600">Common questions about WinLocksmith and troubleshooting.</p>
+        <div className="py-16 px-4 max-w-2xl mx-auto space-y-10">
+            <div className="text-center space-y-3">
+                <h1 className="text-3xl font-bold dark:text-white text-zinc-900 tracking-tight">Frequently Asked Questions</h1>
+                <p className="text-sm dark:text-zinc-500 text-zinc-500">Common questions and troubleshooting guides.</p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-3">
                 <FAQItem
-                    question="How do I completely remove all restrictions?"
-                    answer="Run the `Restore_....ps1` script included in your download bundle as Administrator. It will reset Registry Keys, Windows Services, File Permissions, and Power settings to their defaults. A reboot is recommended after restoring."
-                    icon={<ICONS.RotateCcw className="w-5 h-5 text-emerald-400" />}
+                    question="How do I remove all restrictions?"
+                    answer="Run the Restore_....ps1 script included in your download bundle as Administrator. It resets registry keys, services, permissions, and power settings. A reboot is recommended."
+                    icon={<ICONS.RotateCcw className="w-4 h-4 text-emerald-400" />}
                 />
-
                 <FAQItem
                     question="Why does the script require Administrator privileges?"
-                    answer="WinLocksmith modifies System Registry keys (HKLM) and Software Restriction Policies to enforce security. These are protected system areas that only Administrators can modify."
-                    icon={<ICONS.ShieldAlert className="w-5 h-5 text-yellow-400" />}
+                    answer="WinLocksmith modifies System Registry keys (HKLM) and Software Restriction Policies — protected areas that only administrators can access."
+                    icon={<ICONS.ShieldAlert className="w-4 h-4 text-amber-400" />}
                 />
-
                 <FAQItem
                     question="Does this work on Windows Home Edition?"
-                    answer="Yes! We detect Windows Home edition and use a special 'Compatibility Mode' that applies restrictions using `ICACLS` (File Permissions) instead of Group Policy, giving you near-Pro level control."
-                    icon={<ICONS.CheckCircle2 className="w-5 h-5 text-cyan-400" />}
+                    answer="Yes! We detect Windows Home and use a Compatibility Mode that applies restrictions using ICACLS (file permissions) instead of Group Policy, giving near-Pro level control."
+                    icon={<ICONS.CheckCircle2 className="w-4 h-4 text-sky-400" />}
                 />
-
                 <FAQItem
                     question="Is it safe? Does it send data to the cloud?"
-                    answer="It is 100% safe and offline. The logic runs entirely in your browser. The generated `.ps1` script is plain text that you can inspect before running. No telemetry or data is sent to us."
-                    icon={<ICONS.WifiOff className="w-5 h-5 dark:text-slate-400 text-slate-500" />}
+                    answer="100% safe and offline. The logic runs entirely in your browser. The generated .ps1 script is plain text you can inspect before running. No telemetry is sent."
+                    icon={<ICONS.WifiOff className="w-4 h-4 dark:text-zinc-400 text-zinc-500" />}
                 />
             </div>
-
         </div>
     );
 };
 
 const FAQItem = ({ question, answer, icon }: any) => (
-    <div className="dark:bg-slate-900 bg-white dark:border-slate-800 border-slate-200 border rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-bold dark:text-white text-slate-900 flex items-center gap-3 mb-3">
-            {icon} {question}
+    <div className="dark:bg-zinc-900/40 bg-white dark:border-zinc-800/40 border-zinc-200 border rounded-xl p-5 transition-all hover:dark:border-zinc-700/60 hover:border-zinc-300">
+        <h3 className="text-sm font-semibold dark:text-white text-zinc-900 flex items-center gap-2.5 mb-2">
+            <div className="w-7 h-7 rounded-lg dark:bg-zinc-800 bg-zinc-100 flex items-center justify-center shrink-0">
+                {icon}
+            </div>
+            {question}
         </h3>
-        <p className="dark:text-slate-400 text-slate-600 leading-relaxed text-sm pl-8">
+        <p className="dark:text-zinc-500 text-zinc-500 leading-relaxed text-[13px] pl-[38px]">
             {answer}
         </p>
     </div>
