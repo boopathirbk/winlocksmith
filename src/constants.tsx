@@ -43,7 +43,8 @@ import {
   WifiOff,
   Mail,
   MapPin,
-  Heart
+  Heart,
+  Star
 } from 'lucide-react';
 
 
@@ -92,7 +93,8 @@ export const ICONS = {
   ShieldAlert,
   WifiOff,
   MapPin,
-  Heart
+  Heart,
+  Star,
 };
 
 export const COMMON_BROWSERS = [

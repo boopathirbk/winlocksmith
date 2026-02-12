@@ -38,7 +38,6 @@ const Layout: React.FC = () => {
         { path: '/config', label: 'Configure' },
         { path: '/faq', label: 'FAQ' },
         { path: '/author', label: 'Author' },
-        { path: '/donate', label: 'Donate' },
     ];
 
     return (
@@ -71,8 +70,8 @@ const Layout: React.FC = () => {
                         {navLinks.map(({ path, label }) => (
                             <Link key={path} to={path}
                                 className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(path)
-                                        ? (isDarkMode ? 'text-white bg-zinc-800' : 'text-zinc-900 bg-zinc-100')
-                                        : (isDarkMode ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100')
+                                    ? (isDarkMode ? 'text-white bg-zinc-800' : 'text-zinc-900 bg-zinc-100')
+                                    : (isDarkMode ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100')
                                     }`}
                                 aria-current={isActive(path) ? 'page' : undefined}
                             >
@@ -82,13 +81,19 @@ const Layout: React.FC = () => {
                     </nav>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                         <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noopener noreferrer"
-                            className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100'}`}
-                            aria-label="View source on GitHub"
+                            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border ${isDarkMode ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50' : 'text-zinc-600 hover:text-zinc-900 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'}`}
+                            aria-label="Star WinLocksmith on GitHub"
                         >
-                            <ICONS.Github className="w-[18px] h-[18px]" />
+                            <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star
                         </a>
+                        <Link to="/donate"
+                            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${isDarkMode ? 'text-rose-400 bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20' : 'text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200'}`}
+                            aria-label="Support WinLocksmith"
+                        >
+                            <ICONS.Heart className="w-3.5 h-3.5" aria-hidden="true" /> Donate
+                        </Link>
                         <button
                             onClick={() => setIsDarkMode(!isDarkMode)}
                             className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'text-amber-400 hover:bg-zinc-800/50' : 'text-zinc-600 hover:bg-zinc-100'}`}
@@ -117,14 +122,22 @@ const Layout: React.FC = () => {
                     <nav className={`md:hidden animate-slide-down border-t px-3 py-2 space-y-0.5 ${isDarkMode ? 'bg-zinc-950/95 border-zinc-800/50 backdrop-blur-xl' : 'bg-white/95 border-zinc-200 backdrop-blur-xl'}`} role="navigation" aria-label="Mobile navigation">
                         {navLinks.map(({ path, label }) => (
                             <Link key={path} to={path} className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive(path)
-                                    ? (isDarkMode ? 'text-white bg-zinc-800' : 'text-zinc-900 bg-zinc-100')
-                                    : (isDarkMode ? 'text-zinc-400 hover:text-white hover:bg-zinc-800/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50')
+                                ? (isDarkMode ? 'text-white bg-zinc-800' : 'text-zinc-900 bg-zinc-100')
+                                : (isDarkMode ? 'text-zinc-400 hover:text-white hover:bg-zinc-800/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50')
                                 }`}
                                 aria-current={isActive(path) ? 'page' : undefined}
                             >
                                 {label}
                             </Link>
                         ))}
+                        <div className="border-t dark:border-zinc-800/30 border-zinc-200 my-1 pt-1 flex gap-2 px-1">
+                            <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noopener noreferrer" className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${isDarkMode ? 'text-zinc-400 border-zinc-800 hover:bg-zinc-800/50' : 'text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>
+                                <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star
+                            </a>
+                            <Link to="/donate" className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isDarkMode ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20' : 'text-rose-600 bg-rose-50 border border-rose-200'}`}>
+                                <ICONS.Heart className="w-3.5 h-3.5" aria-hidden="true" /> Donate
+                            </Link>
+                        </div>
                     </nav>
                 )}
             </header>
