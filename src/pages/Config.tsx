@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import JSZip from 'jszip';
 import { ICONS, INITIAL_STATE } from '../constants';
 import { AppState, WebConfig, BlockConfig, AdvancedConfig, KioskConfig, ScriptMode } from '../types';
@@ -11,6 +11,7 @@ const Config: React.FC = () => {
     const [previewScript, setPreviewScript] = useState('');
     const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
+    const [copyTooltip, setCopyTooltip] = useState(false);
 
     useEffect(() => {
         const script = generatePowerShellScript(state, previewMode);
@@ -72,29 +73,45 @@ const Config: React.FC = () => {
         URL.revokeObjectURL(url);
     };
 
-    const handleCopy = () => navigator.clipboard.writeText(previewScript);
+    const handleCopy = useCallback(() => {
+        navigator.clipboard.writeText(previewScript);
+        setCopyTooltip(true);
+        setTimeout(() => setCopyTooltip(false), 1800);
+    }, [previewScript]);
+
+    // Close modals on Escape (WCAG 2.1.1)
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                if (showPreviewModal) setShowPreviewModal(false);
+                if (isRecoveryOpen) setIsRecoveryOpen(false);
+            }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [showPreviewModal, isRecoveryOpen]);
 
     const NavButton = ({ id, icon: Icon, label }: any) => (
-        <button onClick={() => scrollToSection(id)} className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200 text-[13px] font-medium ${activeSection === id
-                ? 'dark:bg-zinc-800 bg-zinc-100 dark:text-white text-zinc-900'
-                : 'dark:text-zinc-500 text-zinc-500 dark:hover:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:text-zinc-300 hover:text-zinc-700'
+        <button onClick={() => scrollToSection(id)} className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${activeSection === id
+                ? 'dark:bg-zinc-800 bg-zinc-200/80 dark:text-white text-zinc-900'
+                : 'dark:text-zinc-500 text-zinc-600 dark:hover:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:text-zinc-300 hover:text-zinc-900'
             }`}>
-            <Icon className="w-4 h-4" /> {label}
+            <Icon className="w-4 h-4" aria-hidden="true" /> {label}
         </button>
     );
 
     return (
         <div className="flex flex-col md:flex-row relative">
             {/* Sidebar */}
-            <aside className="w-full md:w-56 lg:w-64 dark:bg-zinc-900/30 bg-zinc-50/80 border-r dark:border-zinc-800/40 border-zinc-200 md:h-[calc(100vh-56px)] md:sticky md:top-14 flex-shrink-0">
+            <aside className="w-full md:w-56 lg:w-64 dark:bg-zinc-900/30 bg-zinc-50 border-r dark:border-zinc-800/40 border-zinc-200 md:h-[calc(100vh-56px)] md:sticky md:top-14 flex-shrink-0" role="navigation" aria-label="Configuration sections">
                 <div className="p-3 space-y-0.5">
                     <NavButton id="system" icon={ICONS.Cpu} label="Core Restrictions" />
                     <NavButton id="kiosk" icon={ICONS.Monitor} label="Kiosk & UI" />
                     <NavButton id="web" icon={ICONS.Globe} label="Browser & Web" />
                     <NavButton id="advanced" icon={ICONS.Settings} label="Admin & Audit" />
-                    <div className="my-2 border-t dark:border-zinc-800/30 border-zinc-200" />
-                    <button onClick={() => setIsRecoveryOpen(true)} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500/5 transition-all text-[13px] font-medium">
-                        <ICONS.Shield className="w-4 h-4" /> Recovery Guide
+                    <div className="my-2 border-t dark:border-zinc-800/30 border-zinc-200" role="separator" />
+                    <button onClick={() => setIsRecoveryOpen(true)} className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/5 transition-all text-sm font-medium">
+                        <ICONS.Shield className="w-4 h-4" aria-hidden="true" /> Recovery Guide
                     </button>
                 </div>
             </aside>
@@ -103,8 +120,8 @@ const Config: React.FC = () => {
             <div className="flex-1 p-5 md:p-10 pb-28 space-y-14 max-w-5xl mx-auto w-full">
 
                 {/* Core Restrictions */}
-                <section id="system" className="space-y-5 scroll-mt-20">
-                    <SectionHeader icon={ICONS.Cpu} color="text-sky-400" title="Core Restrictions" subtitle="Manage access to physical ports, software, and app execution." />
+                <section id="system" className="space-y-5 scroll-mt-20" aria-labelledby="system-heading">
+                    <SectionHeader id="system-heading" icon={ICONS.Cpu} color="text-sky-500" title="Core Restrictions" subtitle="Manage access to physical ports, software, and app execution." />
                     <div className="grid md:grid-cols-2 gap-4">
                         <ToggleCard title="USB Storage" icon={ICONS.Usb} accent="sky" checked={state.system.blockUsb} onChange={(v: boolean) => updateSystem('blockUsb', v)} description="Block USB drives for standard users." />
                         <ToggleCard title="Peripheral Pairing" icon={ICONS.Printer} accent="indigo" checked={state.system.allowPeripherals} onChange={(v: boolean) => updateSystem('allowPeripherals', v)} description="Allow Bluetooth audio & printer pairing." />
@@ -114,8 +131,8 @@ const Config: React.FC = () => {
                 </section>
 
                 {/* Kiosk */}
-                <section id="kiosk" className="space-y-5 scroll-mt-20">
-                    <SectionHeader icon={ICONS.Monitor} color="text-violet-400" title="Kiosk & Maintenance" />
+                <section id="kiosk" className="space-y-5 scroll-mt-20" aria-labelledby="kiosk-heading">
+                    <SectionHeader id="kiosk-heading" icon={ICONS.Monitor} color="text-violet-500" title="Kiosk & Maintenance" />
                     <div className="grid md:grid-cols-2 gap-4">
                         <ToggleCard title="Disable Updates" icon={ICONS.RefreshCwOff} accent="amber" checked={state.kiosk.disableWindowsUpdate} onChange={(v: boolean) => updateKiosk('disableWindowsUpdate', v)} description="Prevent Windows Update from running." />
                         <ToggleCard title="Disable Sleep" icon={ICONS.Moon} accent="sky" checked={state.kiosk.disableSleep} onChange={(v: boolean) => updateKiosk('disableSleep', v)} description="Keep device awake indefinitely." />
@@ -127,27 +144,28 @@ const Config: React.FC = () => {
                 </section>
 
                 {/* Web */}
-                <section id="web" className="space-y-5 scroll-mt-20">
-                    <SectionHeader icon={ICONS.Globe} color="text-blue-400" title="Browser & Web" />
+                <section id="web" className="space-y-5 scroll-mt-20" aria-labelledby="web-heading">
+                    <SectionHeader id="web-heading" icon={ICONS.Globe} color="text-blue-500" title="Browser & Web" />
                     <ToggleCard title="Enforce Edge Kiosk Mode" icon={ICONS.Globe} accent="blue" checked={state.web.enforceEdge} onChange={(v: boolean) => updateWeb('enforceEdge', v)} description="Configure Edge to only allow specific websites." />
 
                     {state.web.enforceEdge && (
                         <div className="dark:bg-zinc-900/40 bg-white dark:border-zinc-800/40 border-zinc-200 border rounded-xl p-5 space-y-5">
-                            <div>
-                                <h3 className="text-sm font-semibold dark:text-white text-zinc-900 mb-2">Whitelisted URLs</h3>
+                            <fieldset>
+                                <legend className="text-sm font-semibold dark:text-white text-zinc-900 mb-2">Whitelisted URLs</legend>
                                 <div className="flex gap-2">
-                                    <input type="text" id="urlInput" placeholder="example.com" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-sky-500/50 focus:border-sky-400 transition-colors font-mono" onKeyDown={(e) => e.key === 'Enter' && addUrl(e.currentTarget.value)} />
+                                    <label htmlFor="urlInput" className="sr-only">Enter URL to whitelist</label>
+                                    <input type="text" id="urlInput" placeholder="example.com" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-sky-500/50 focus:border-sky-500 transition-colors font-mono" onKeyDown={(e) => e.key === 'Enter' && addUrl(e.currentTarget.value)} />
                                     <button onClick={() => addUrl((document.getElementById('urlInput') as HTMLInputElement).value)} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
                                 </div>
                                 <div className="mt-2 space-y-1">
                                     {state.web.allowedUrls.map(url => (
                                         <div key={url} className="flex justify-between items-center text-sm p-2.5 dark:bg-zinc-800/40 bg-zinc-50 rounded-lg border dark:border-zinc-700/30 border-zinc-200">
-                                            <span className="dark:text-zinc-400 text-zinc-600 font-mono text-xs">{url}</span>
-                                            <button onClick={() => removeUrl(url)}><ICONS.XCircle className="w-4 h-4 dark:text-zinc-600 text-zinc-400 hover:text-rose-400 transition-colors" /></button>
+                                            <span className="dark:text-zinc-300 text-zinc-700 font-mono text-xs">{url}</span>
+                                            <button onClick={() => removeUrl(url)} aria-label={`Remove ${url}`}><ICONS.XCircle className="w-4 h-4 dark:text-zinc-600 text-zinc-400 hover:text-rose-500 transition-colors" /></button>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </fieldset>
                             <div className="grid md:grid-cols-2 gap-3">
                                 <MiniToggle label="Block File Uploads" checked={state.web.blockFileUploads} onChange={(v: boolean) => updateWeb('blockFileUploads', v)} />
                                 <MiniToggle label="Force Startup Pages" checked={state.web.forceStartup} onChange={(v: boolean) => updateWeb('forceStartup', v)} />
@@ -160,8 +178,8 @@ const Config: React.FC = () => {
                 </section>
 
                 {/* Advanced */}
-                <section id="advanced" className="space-y-5 scroll-mt-20">
-                    <SectionHeader icon={ICONS.Settings} color="text-amber-400" title="Advanced" />
+                <section id="advanced" className="space-y-5 scroll-mt-20" aria-labelledby="advanced-heading">
+                    <SectionHeader id="advanced-heading" icon={ICONS.Settings} color="text-amber-500" title="Advanced" />
                     <div className="grid md:grid-cols-2 gap-4">
                         <ToggleCard title="Prevent Admin Elevation" icon={ICONS.UserX} accent="rose" checked={state.advanced.preventUacBypass} onChange={(v: boolean) => updateAdvanced('preventUacBypass', v)} description="Deny UAC prompts for standard users." />
                         <ToggleCard title="Isolate User Data" icon={ICONS.EyeOff} accent="rose" checked={state.advanced.isolateUserFolders} onChange={(v: boolean) => updateAdvanced('isolateUserFolders', v)} description="Revoke admin access to user folders." />
@@ -181,14 +199,22 @@ const Config: React.FC = () => {
                             <span className="text-xs dark:text-zinc-500 text-zinc-500 ml-2">Review settings before downloading.</span>
                         </div>
                         <div className="flex items-center gap-2 ml-auto">
-                            <button onClick={() => setShowPreviewModal(true)} className="flex items-center gap-2 px-3.5 py-2 dark:bg-zinc-800 bg-zinc-100 dark:hover:bg-zinc-700 hover:bg-zinc-200 dark:text-zinc-300 text-zinc-700 rounded-lg text-[13px] font-medium transition-colors border dark:border-zinc-700/50 border-zinc-300">
-                                <ICONS.Terminal className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Preview</span>
+                            <button onClick={() => setShowPreviewModal(true)} className="flex items-center gap-2 px-3.5 py-2 dark:bg-zinc-800 bg-zinc-100 dark:hover:bg-zinc-700 hover:bg-zinc-200 dark:text-zinc-300 text-zinc-700 rounded-lg text-sm font-medium transition-colors border dark:border-zinc-700/50 border-zinc-300" aria-label="Preview generated script">
+                                <ICONS.Terminal className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Preview</span>
                             </button>
-                            <button onClick={handleCopy} className="flex items-center gap-2 px-3.5 py-2 dark:bg-zinc-800 bg-zinc-100 dark:hover:bg-zinc-700 hover:bg-zinc-200 dark:text-zinc-300 text-zinc-700 rounded-lg text-[13px] font-medium transition-colors border dark:border-zinc-700/50 border-zinc-300">
-                                <ICONS.Copy className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Copy</span>
-                            </button>
-                            <button onClick={handleDownloadBundle} className="flex items-center gap-2 px-5 py-2 bg-white dark:bg-white text-zinc-900 rounded-lg text-[13px] font-semibold transition-all shadow-sm hover:shadow-md hover:shadow-sky-500/10 hover:scale-[1.02] active:scale-[0.98]">
-                                <ICONS.Download className="w-3.5 h-3.5" /> Download Bundle
+
+                            {/* Copy with tooltip */}
+                            <div className="tooltip relative">
+                                <span className={`tooltip-text ${copyTooltip ? 'show' : ''}`} role="status" aria-live="polite">
+                                    {copyTooltip ? '✓ Copied!' : ''}
+                                </span>
+                                <button onClick={handleCopy} className="flex items-center gap-2 px-3.5 py-2 dark:bg-zinc-800 bg-zinc-100 dark:hover:bg-zinc-700 hover:bg-zinc-200 dark:text-zinc-300 text-zinc-700 rounded-lg text-sm font-medium transition-colors border dark:border-zinc-700/50 border-zinc-300" aria-label="Copy script to clipboard">
+                                    <ICONS.Copy className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Copy</span>
+                                </button>
+                            </div>
+
+                            <button onClick={handleDownloadBundle} className="flex items-center gap-2 px-5 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold transition-all shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]" aria-label="Download lockdown and restore scripts as ZIP bundle">
+                                <ICONS.Download className="w-3.5 h-3.5" aria-hidden="true" /> Download Bundle
                             </button>
                         </div>
                     </div>
@@ -197,15 +223,15 @@ const Config: React.FC = () => {
 
             {/* Preview Modal */}
             {showPreviewModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowPreviewModal(false)}>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowPreviewModal(false)} role="dialog" aria-modal="true" aria-labelledby="preview-title">
                     <div className="dark:bg-zinc-900 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl w-full max-w-4xl shadow-2xl max-h-[80vh] flex flex-col animate-fade-in" onClick={(e) => e.stopPropagation()}>
                         <div className="p-4 border-b dark:border-zinc-800/50 border-zinc-200 flex justify-between items-center">
-                            <h3 className="font-semibold dark:text-white text-zinc-900 flex items-center gap-2 text-sm"><ICONS.Terminal className="w-4 h-4 text-sky-400" /> Script Preview</h3>
-                            <button onClick={() => setShowPreviewModal(false)} className="dark:text-zinc-500 text-zinc-400 hover:text-rose-400 transition-colors"><ICONS.XCircle className="w-5 h-5" /></button>
+                            <h3 id="preview-title" className="font-semibold dark:text-white text-zinc-900 flex items-center gap-2 text-sm"><ICONS.Terminal className="w-4 h-4 text-sky-500" aria-hidden="true" /> Script Preview</h3>
+                            <button onClick={() => setShowPreviewModal(false)} className="dark:text-zinc-500 text-zinc-400 hover:text-rose-500 transition-colors" aria-label="Close preview"><ICONS.XCircle className="w-5 h-5" /></button>
                         </div>
-                        <div className="p-5 dark:bg-zinc-950 bg-zinc-50 overflow-auto flex-1 font-mono text-xs dark:text-sky-300/80 text-zinc-700 whitespace-pre leading-relaxed">{previewScript}</div>
+                        <div className="p-5 dark:bg-zinc-950 bg-zinc-50 overflow-auto flex-1 font-mono text-xs dark:text-sky-300/80 text-zinc-700 whitespace-pre leading-relaxed" role="region" aria-label="Generated PowerShell script">{previewScript}</div>
                         <div className="p-3 border-t dark:border-zinc-800/50 border-zinc-200 flex justify-end gap-2">
-                            <button onClick={() => setPreviewMode(previewMode === 'LOCK' ? 'UNLOCK' : 'LOCK')} className="px-4 py-2 rounded-lg dark:bg-zinc-800 bg-zinc-100 border dark:border-zinc-700/50 border-zinc-300 dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 text-[13px] font-medium transition-colors">
+                            <button onClick={() => setPreviewMode(previewMode === 'LOCK' ? 'UNLOCK' : 'LOCK')} className="px-4 py-2 rounded-lg dark:bg-zinc-800 bg-zinc-100 border dark:border-zinc-700/50 border-zinc-300 dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 text-sm font-medium transition-colors">
                                 Switch to {previewMode === 'LOCK' ? 'Restore' : 'Lockdown'} Script
                             </button>
                         </div>
@@ -215,10 +241,10 @@ const Config: React.FC = () => {
 
             {/* Recovery Modal */}
             {isRecoveryOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setIsRecoveryOpen(false)}>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setIsRecoveryOpen(false)} role="dialog" aria-modal="true" aria-labelledby="recovery-title">
                     <div className="dark:bg-zinc-900 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl w-full max-w-lg shadow-2xl p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="text-lg font-semibold dark:text-white text-zinc-900 mb-3">Emergency Recovery</h2>
-                        <p className="dark:text-zinc-400 text-zinc-600 text-sm leading-relaxed mb-5">If you get locked out, boot into <span className="font-mono dark:text-zinc-300 text-zinc-800">Safe Mode</span> and run the Restore script as Administrator.</p>
+                        <h2 id="recovery-title" className="text-lg font-semibold dark:text-white text-zinc-900 mb-3">Emergency Recovery</h2>
+                        <p className="dark:text-zinc-400 text-zinc-600 text-sm leading-relaxed mb-5">If you get locked out, boot into <span className="font-mono dark:text-zinc-200 text-zinc-900 font-medium">Safe Mode</span> and run the Restore script as Administrator.</p>
                         <button onClick={() => setIsRecoveryOpen(false)} className="px-4 py-2 dark:bg-zinc-800 bg-zinc-100 dark:text-white text-zinc-800 rounded-lg text-sm font-medium transition-colors hover:dark:bg-zinc-700 hover:bg-zinc-200">Close</button>
                     </div>
                 </div>
@@ -229,12 +255,12 @@ const Config: React.FC = () => {
 
 // --- Helper Components ---
 
-const SectionHeader = ({ icon: Icon, color, title, subtitle }: any) => (
+const SectionHeader = ({ id, icon: Icon, color, title, subtitle }: any) => (
     <div className="space-y-1 pb-3 border-b dark:border-zinc-800/40 border-zinc-200">
-        <h2 className="text-xl font-semibold flex items-center gap-2.5 dark:text-white text-zinc-900 tracking-tight">
-            <Icon className={`w-5 h-5 ${color}`} /> {title}
+        <h2 id={id} className="text-xl font-semibold flex items-center gap-2.5 dark:text-white text-zinc-900 tracking-tight">
+            <Icon className={`w-5 h-5 ${color}`} aria-hidden="true" /> {title}
         </h2>
-        {subtitle && <p className="text-[13px] dark:text-zinc-500 text-zinc-500">{subtitle}</p>}
+        {subtitle && <p className="text-sm dark:text-zinc-400 text-zinc-600">{subtitle}</p>}
     </div>
 );
 
@@ -249,6 +275,7 @@ const ToggleCard = ({ title, icon: Icon, accent, checked, onChange, description 
         zinc: { active: 'dark:border-zinc-600 border-zinc-300', dot: 'bg-zinc-500', track: 'bg-zinc-500' },
     };
     const a = accents[accent] || accents.sky;
+    const toggleId = `toggle-${title.replace(/\s+/g, '-').toLowerCase()}`;
 
     return (
         <div className={`rounded-xl p-5 transition-all duration-200 border ${checked
@@ -257,33 +284,43 @@ const ToggleCard = ({ title, icon: Icon, accent, checked, onChange, description 
             }`}>
             <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg dark:bg-zinc-800/80 bg-zinc-100 flex items-center justify-center">
-                        <Icon className={`w-4 h-4 ${checked ? `text-${accent}-400` : 'dark:text-zinc-500 text-zinc-400'}`} />
+                    <div className="w-8 h-8 rounded-lg dark:bg-zinc-800/80 bg-zinc-100 flex items-center justify-center" aria-hidden="true">
+                        <Icon className={`w-4 h-4 ${checked ? `text-${accent}-500` : 'dark:text-zinc-500 text-zinc-400'}`} />
                     </div>
-                    <h3 className="text-sm font-semibold dark:text-white text-zinc-900">{title}</h3>
+                    <label htmlFor={toggleId} className="text-sm font-semibold dark:text-white text-zinc-900 cursor-pointer">{title}</label>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-                    <div className={`w-10 h-[22px] rounded-full transition-colors duration-200 ${checked ? a.track : 'dark:bg-zinc-700 bg-zinc-300'} relative`}>
-                        <div className={`absolute top-[3px] left-[3px] bg-white rounded-full w-4 h-4 shadow-sm transition-transform duration-200 ${checked ? 'translate-x-[18px]' : ''}`} />
-                    </div>
-                </label>
+                <button
+                    id={toggleId}
+                    role="switch"
+                    aria-checked={checked}
+                    aria-label={`${title}: ${checked ? 'enabled' : 'disabled'}`}
+                    onClick={() => onChange(!checked)}
+                    className={`relative w-10 h-[22px] rounded-full transition-colors duration-200 ${checked ? a.track : 'dark:bg-zinc-700 bg-zinc-300'}`}
+                >
+                    <span className={`absolute top-[3px] left-[3px] bg-white rounded-full w-4 h-4 shadow-sm transition-transform duration-200 ${checked ? 'translate-x-[18px]' : ''}`} />
+                </button>
             </div>
-            <p className="text-[13px] dark:text-zinc-500 text-zinc-500 leading-relaxed">{description}</p>
+            <p className="text-sm dark:text-zinc-400 text-zinc-600 leading-relaxed">{description}</p>
         </div>
     );
 };
 
-const MiniToggle = ({ label, checked, onChange }: any) => (
-    <div className="flex items-center justify-between p-3 dark:bg-zinc-800/30 bg-zinc-50 rounded-lg border dark:border-zinc-700/30 border-zinc-200">
-        <span className="text-[13px] dark:text-zinc-400 text-zinc-600">{label}</span>
-        <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-            <div className={`w-8 h-[18px] rounded-full transition-colors duration-200 ${checked ? 'bg-sky-500' : 'dark:bg-zinc-700 bg-zinc-300'} relative`}>
-                <div className={`absolute top-[2px] left-[2px] bg-white rounded-full w-[14px] h-[14px] shadow-sm transition-transform duration-200 ${checked ? 'translate-x-[14px]' : ''}`} />
-            </div>
-        </label>
-    </div>
-);
+const MiniToggle = ({ label, checked, onChange }: any) => {
+    const toggleId = `mini-${label.replace(/\s+/g, '-').toLowerCase()}`;
+    return (
+        <div className="flex items-center justify-between p-3 dark:bg-zinc-800/30 bg-zinc-50 rounded-lg border dark:border-zinc-700/30 border-zinc-200">
+            <label htmlFor={toggleId} className="text-sm dark:text-zinc-300 text-zinc-700 cursor-pointer">{label}</label>
+            <button
+                id={toggleId}
+                role="switch"
+                aria-checked={checked}
+                onClick={() => onChange(!checked)}
+                className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${checked ? 'bg-sky-500' : 'dark:bg-zinc-700 bg-zinc-300'}`}
+            >
+                <span className={`absolute top-[2px] left-[2px] bg-white rounded-full w-[14px] h-[14px] shadow-sm transition-transform duration-200 ${checked ? 'translate-x-[14px]' : ''}`} />
+            </button>
+        </div>
+    );
+};
 
 export default Config;
