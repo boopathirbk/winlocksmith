@@ -73,10 +73,12 @@ const Config: React.FC = () => {
         URL.revokeObjectURL(url);
     };
 
-    const handleCopy = useCallback(() => {
-        navigator.clipboard.writeText(previewScript);
-        setCopyTooltip(true);
-        setTimeout(() => setCopyTooltip(false), 1800);
+    const handleCopy = useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(previewScript);
+            setCopyTooltip(true);
+            setTimeout(() => setCopyTooltip(false), 1800);
+        } catch { /* clipboard API may fail in insecure contexts */ }
     }, [previewScript]);
 
     // Close modals on Escape (WCAG 2.1.1)
@@ -93,8 +95,8 @@ const Config: React.FC = () => {
 
     const NavButton = ({ id, icon: Icon, label }: any) => (
         <button onClick={() => scrollToSection(id)} className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${activeSection === id
-                ? 'dark:bg-zinc-800 bg-zinc-200/80 dark:text-white text-zinc-900'
-                : 'dark:text-zinc-500 text-zinc-600 dark:hover:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:text-zinc-300 hover:text-zinc-900'
+            ? 'dark:bg-zinc-800 bg-zinc-200/80 dark:text-white text-zinc-900'
+            : 'dark:text-zinc-500 text-zinc-600 dark:hover:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:text-zinc-300 hover:text-zinc-900'
             }`}>
             <Icon className="w-4 h-4" aria-hidden="true" /> {label}
         </button>
@@ -154,8 +156,8 @@ const Config: React.FC = () => {
                                 <legend className="text-sm font-semibold dark:text-white text-zinc-900 mb-2">Whitelisted URLs</legend>
                                 <div className="flex gap-2">
                                     <label htmlFor="urlInput" className="sr-only">Enter URL to whitelist</label>
-                                    <input type="text" id="urlInput" placeholder="example.com" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-sky-500/50 focus:border-sky-500 transition-colors font-mono" onKeyDown={(e) => e.key === 'Enter' && addUrl(e.currentTarget.value)} />
-                                    <button onClick={() => addUrl((document.getElementById('urlInput') as HTMLInputElement).value)} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
+                                    <input type="text" id="urlInput" placeholder="example.com" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-sky-500/50 focus:border-sky-500 transition-colors font-mono" onKeyDown={(e) => { if (e.key === 'Enter') { addUrl(e.currentTarget.value); e.currentTarget.value = ''; } }} />
+                                    <button onClick={() => { const el = document.getElementById('urlInput') as HTMLInputElement; addUrl(el.value); el.value = ''; }} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
                                 </div>
                                 <div className="mt-2 space-y-1">
                                     {state.web.allowedUrls.map(url => (
@@ -266,26 +268,26 @@ const SectionHeader = ({ id, icon: Icon, color, title, subtitle }: any) => (
 
 const ToggleCard = ({ title, icon: Icon, accent, checked, onChange, description }: any) => {
     const accents: any = {
-        sky: { active: 'dark:border-sky-500/30 border-sky-300', dot: 'bg-sky-500', track: 'bg-sky-500' },
-        indigo: { active: 'dark:border-indigo-500/30 border-indigo-300', dot: 'bg-indigo-500', track: 'bg-indigo-500' },
-        violet: { active: 'dark:border-violet-500/30 border-violet-300', dot: 'bg-violet-500', track: 'bg-violet-500' },
-        rose: { active: 'dark:border-rose-500/30 border-rose-300', dot: 'bg-rose-500', track: 'bg-rose-500' },
-        amber: { active: 'dark:border-amber-500/30 border-amber-300', dot: 'bg-amber-500', track: 'bg-amber-500' },
-        blue: { active: 'dark:border-blue-500/30 border-blue-300', dot: 'bg-blue-500', track: 'bg-blue-500' },
-        zinc: { active: 'dark:border-zinc-600 border-zinc-300', dot: 'bg-zinc-500', track: 'bg-zinc-500' },
+        sky: { active: 'dark:border-sky-500/30 border-sky-300', dot: 'bg-sky-500', track: 'bg-sky-500', icon: 'text-sky-500' },
+        indigo: { active: 'dark:border-indigo-500/30 border-indigo-300', dot: 'bg-indigo-500', track: 'bg-indigo-500', icon: 'text-indigo-500' },
+        violet: { active: 'dark:border-violet-500/30 border-violet-300', dot: 'bg-violet-500', track: 'bg-violet-500', icon: 'text-violet-500' },
+        rose: { active: 'dark:border-rose-500/30 border-rose-300', dot: 'bg-rose-500', track: 'bg-rose-500', icon: 'text-rose-500' },
+        amber: { active: 'dark:border-amber-500/30 border-amber-300', dot: 'bg-amber-500', track: 'bg-amber-500', icon: 'text-amber-500' },
+        blue: { active: 'dark:border-blue-500/30 border-blue-300', dot: 'bg-blue-500', track: 'bg-blue-500', icon: 'text-blue-500' },
+        zinc: { active: 'dark:border-zinc-600 border-zinc-300', dot: 'bg-zinc-500', track: 'bg-zinc-500', icon: 'text-zinc-500' },
     };
     const a = accents[accent] || accents.sky;
     const toggleId = `toggle-${title.replace(/\s+/g, '-').toLowerCase()}`;
 
     return (
         <div className={`rounded-xl p-5 transition-all duration-200 border ${checked
-                ? `dark:bg-zinc-900/60 bg-white ${a.active} shadow-sm`
-                : 'dark:bg-zinc-900/30 bg-white dark:border-zinc-800/40 border-zinc-200 hover:dark:border-zinc-700/60 hover:border-zinc-300'
+            ? `dark:bg-zinc-900/60 bg-white ${a.active} shadow-sm`
+            : 'dark:bg-zinc-900/30 bg-white dark:border-zinc-800/40 border-zinc-200 hover:dark:border-zinc-700/60 hover:border-zinc-300'
             }`}>
             <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg dark:bg-zinc-800/80 bg-zinc-100 flex items-center justify-center" aria-hidden="true">
-                        <Icon className={`w-4 h-4 ${checked ? `text-${accent}-500` : 'dark:text-zinc-500 text-zinc-400'}`} />
+                        <Icon className={`w-4 h-4 ${checked ? a.icon : 'dark:text-zinc-500 text-zinc-400'}`} />
                     </div>
                     <label htmlFor={toggleId} className="text-sm font-semibold dark:text-white text-zinc-900 cursor-pointer">{title}</label>
                 </div>

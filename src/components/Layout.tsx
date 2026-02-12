@@ -10,6 +10,7 @@ const Layout: React.FC = () => {
     });
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [starCount, setStarCount] = useState<number | null>(null);
     const location = useLocation();
 
     useEffect(() => {
@@ -32,6 +33,27 @@ const Layout: React.FC = () => {
     }, []);
 
     const isActive = (path: string) => location.pathname === path;
+
+    // Fetch GitHub stars (cached for 10 min in sessionStorage)
+    useEffect(() => {
+        const CACHE_KEY = 'winlocksmith-stars';
+        const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        if (cached) {
+            try {
+                const { count, ts } = JSON.parse(cached);
+                if (Date.now() - ts < CACHE_TTL) { setStarCount(count); return; }
+            } catch { /* ignore corrupt cache */ }
+        }
+        fetch('https://api.github.com/repos/boopathirbk/winlocksmith', { headers: { Accept: 'application/vnd.github.v3+json' } })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(data => {
+                const count = data.stargazers_count ?? 0;
+                setStarCount(count);
+                sessionStorage.setItem(CACHE_KEY, JSON.stringify({ count, ts: Date.now() }));
+            })
+            .catch(() => { /* GitHub API rate-limited or unavailable — silently fail */ });
+    }, []);
 
     const navLinks = [
         { path: '/', label: 'Home' },
@@ -86,7 +108,7 @@ const Layout: React.FC = () => {
                             className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border ${isDarkMode ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50' : 'text-zinc-600 hover:text-zinc-900 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'}`}
                             aria-label="Star WinLocksmith on GitHub"
                         >
-                            <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star
+                            <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star{starCount !== null && <span className="ml-0.5 tabular-nums">{starCount.toLocaleString()}</span>}
                         </a>
                         <Link to="/donate"
                             className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${isDarkMode ? 'text-rose-400 bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20' : 'text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200'}`}
@@ -132,7 +154,7 @@ const Layout: React.FC = () => {
                         ))}
                         <div className="border-t dark:border-zinc-800/30 border-zinc-200 my-1 pt-1 flex gap-2 px-1">
                             <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noopener noreferrer" className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${isDarkMode ? 'text-zinc-400 border-zinc-800 hover:bg-zinc-800/50' : 'text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>
-                                <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star
+                                <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star{starCount !== null && <span className="ml-0.5 tabular-nums">{starCount.toLocaleString()}</span>}
                             </a>
                             <Link to="/donate" className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isDarkMode ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20' : 'text-rose-600 bg-rose-50 border border-rose-200'}`}>
                                 <ICONS.Heart className="w-3.5 h-3.5" aria-hidden="true" /> Donate
@@ -156,7 +178,7 @@ const Layout: React.FC = () => {
                         </div>
                         <span className={`text-sm font-medium ${isDarkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>WinLocksmith</span>
                     </div>
-                    <div className={`flex items-center gap-6 text-sm ${isDarkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                    <div className={`flex items-center gap-6 text-sm ${isDarkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>
                         <Link to="/faq" className={`transition-colors ${isDarkMode ? 'hover:text-zinc-300' : 'hover:text-zinc-900'}`}>Help & FAQ</Link>
                         <a href="https://github.com/boopathirbk/winlocksmith/blob/main/LICENSE" target="_blank" rel="noreferrer" className={`transition-colors ${isDarkMode ? 'hover:text-zinc-300' : 'hover:text-zinc-900'}`}>License</a>
                         <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noreferrer" className={`transition-colors ${isDarkMode ? 'hover:text-zinc-300' : 'hover:text-zinc-900'}`}>Source</a>

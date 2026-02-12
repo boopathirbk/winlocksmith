@@ -31,7 +31,7 @@ const Home: React.FC = () => {
                         <Link to="/config" className="group inline-flex items-center justify-center gap-2.5 px-7 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-semibold text-sm shadow-lg shadow-black/10 dark:shadow-white/5 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]">
                             <ICONS.Wand2 className="w-4 h-4 transition-transform group-hover:rotate-12" /> Start Configuring
                         </Link>
-                        <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2.5 px-7 py-3 dark:bg-zinc-800/60 bg-zinc-100 dark:text-zinc-300 text-zinc-700 rounded-xl font-semibold text-sm border dark:border-zinc-700/50 border-zinc-300 transition-all duration-300 hover:dark:bg-zinc-800 hover:bg-zinc-200 active:scale-[0.98]">
+                        <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2.5 px-7 py-3 dark:bg-zinc-800/60 bg-zinc-100 dark:text-zinc-300 text-zinc-700 rounded-xl font-semibold text-sm border dark:border-zinc-700/50 border-zinc-300 transition-all duration-300 dark:hover:bg-zinc-800 hover:bg-zinc-200 active:scale-[0.98]">
                             <ICONS.Github className="w-4 h-4" /> View Source
                         </a>
                     </div>
