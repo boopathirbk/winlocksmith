@@ -303,6 +303,7 @@ function Apply-UserPolicy {
     
     $ExplorerPol = "$HiveRoot\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer"
     $SystemPol   = "$HiveRoot\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"
+    $WinSysPol   = "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\System"
     $PushNotif   = "$HiveRoot\\Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications"
 
     # UI & Kiosk Policies
@@ -317,7 +318,9 @@ function Apply-UserPolicy {
 
     ${isLock && advanced.blockTaskMgr ? `Set-RegKey -Path $SystemPol -Name "DisableTaskMgr" -Value 1` : `Remove-RegValue -Path $SystemPol -Name "DisableTaskMgr"`}
     ${isLock && advanced.blockRegistryTools ? `Set-RegKey -Path $SystemPol -Name "DisableRegistryTools" -Value 1` : `Remove-RegValue -Path $SystemPol -Name "DisableRegistryTools"`}
-    ${isLock && advanced.blockCmdPowershell ? `Set-RegKey -Path $SystemPol -Name "DisableCMD" -Value 2` : `Remove-RegValue -Path $SystemPol -Name "DisableCMD"`}
+    # DisableCMD belongs under Policies\Microsoft\Windows\System (NOT CurrentVersion\Policies\System)
+    # Value 2 = Disable CMD prompt but allow batch scripts to run
+    ${isLock && advanced.blockCmdPowershell ? `Set-RegKey -Path $WinSysPol -Name "DisableCMD" -Value 2` : `Remove-RegValue -Path $WinSysPol -Name "DisableCMD"`}
     
     # Settings / Control Panel Logic (Handles Peripherals Exception)
     ${isLock && (advanced.blockSettings || advanced.blockControlPanel) ? `
