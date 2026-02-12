@@ -11,6 +11,7 @@
     content="windows hardening, kiosk mode, intune alternative, powershell script generator, sysadmin tools, windows security, block usb, disable windows update, windows 11 lockdown, group policy alternative, srp generator" />
   <meta name="author" content="Boopathi R" />
   <meta name="theme-color" content="#09090b" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
@@ -30,283 +31,28 @@
 
   <!-- Structured Data -->
   <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "WinLocksmith",
-        "operatingSystem": "Windows 10, Windows 11",
-        "applicationCategory": "SecurityApplication",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "author": {
-          "@type": "Person",
-          "name": "Boopathi R",
-          "url": "https://boopathirbk.github.io/bresume/"
-        },
-        "description": "A powerful tool to generate PowerShell scripts for Windows system hardening, kiosk mode, and access control."
-      }
-    </script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Geist', 'Geist Sans', 'Inter', 'system-ui', 'sans-serif'],
-            mono: ['Geist Mono', 'JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            zinc: {
-              925: '#111113',
-              950: '#09090b',
-            }
-          },
-          fontSize: {
-            'xs': ['0.75rem', { lineHeight: '1rem' }],
-            'sm': ['0.875rem', { lineHeight: '1.375rem' }],
-            'base': ['1rem', { lineHeight: '1.625rem' }],
-            'lg': ['1.125rem', { lineHeight: '1.75rem' }],
-            'xl': ['1.25rem', { lineHeight: '1.875rem' }],
-            '2xl': ['1.5rem', { lineHeight: '2rem' }],
-            '3xl': ['1.875rem', { lineHeight: '2.375rem' }],
-            '4xl': ['2.25rem', { lineHeight: '2.75rem' }],
-            '5xl': ['3rem', { lineHeight: '1.1' }],
-            '6xl': ['3.75rem', { lineHeight: '1.05' }],
-            '7xl': ['4.5rem', { lineHeight: '1' }],
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.5s ease-out forwards',
-            'fade-up': 'fadeUp 0.6s ease-out forwards',
-            'slide-down': 'slideDown 0.3s ease-out forwards',
-            'glow': 'glow 3s ease-in-out infinite alternate',
-            'shimmer': 'shimmer 2s linear infinite',
-          },
-          keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0' },
-              '100%': { opacity: '1' },
-            },
-            fadeUp: {
-              '0%': { opacity: '0', transform: 'translateY(16px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            slideDown: {
-              '0%': { opacity: '0', transform: 'translateY(-8px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            glow: {
-              '0%': { opacity: '0.4' },
-              '100%': { opacity: '0.7' },
-            },
-            shimmer: {
-              '0%': { backgroundPosition: '-200% 0' },
-              '100%': { backgroundPosition: '200% 0' },
-            },
-          },
-        }
-      }
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "WinLocksmith",
+      "operatingSystem": "Windows 10, Windows 11",
+      "applicationCategory": "SecurityApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Boopathi R",
+        "url": "https://boopathirbk.github.io/bresume/"
+      },
+      "description": "A powerful tool to generate PowerShell scripts for Windows system hardening, kiosk mode, and access control."
     }
   </script>
-  <link href="https://cdn.jsdelivr.net/npm/geist@1.0.0/dist/fonts/geist-sans/style.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/geist@1.0.0/dist/fonts/geist-mono/style.css" rel="stylesheet">
-  <style>
-    /* === GLOBAL === */
-    * {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    /* === TEXT SELECTION === */
-    ::selection {
-      background: #0ea5e9;
-      color: #fff;
-    }
-
-    ::-moz-selection {
-      background: #0ea5e9;
-      color: #fff;
-    }
-
-    .light ::selection {
-      background: #0284c7;
-      color: #fff;
-    }
-
-    .light ::-moz-selection {
-      background: #0284c7;
-      color: #fff;
-    }
-
-    /* === SCROLLBAR === */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #27272a;
-      border-radius: 3px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #3f3f46;
-    }
-
-    .light ::-webkit-scrollbar-thumb {
-      background: #d4d4d8;
-    }
-
-    .light ::-webkit-scrollbar-thumb:hover {
-      background: #a1a1aa;
-    }
-
-    /* === DOT GRID BACKGROUND === */
-    .dot-grid {
-      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-
-    .light .dot-grid {
-      background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-    }
-
-    /* === RADIAL GLOW === */
-    .hero-glow {
-      background: radial-gradient(ellipse 60% 50% at 50% -10%, rgba(56, 189, 248, 0.12) 0%, transparent 60%);
-    }
-
-    .light .hero-glow {
-      background: radial-gradient(ellipse 60% 50% at 50% -10%, rgba(14, 165, 233, 0.1) 0%, transparent 60%);
-    }
-
-    /* === GLASS CARD === */
-    .glass-card {
-      background: rgba(24, 24, 27, 0.5);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(63, 63, 70, 0.4);
-    }
-
-    .light .glass-card {
-      background: rgba(255, 255, 255, 0.8);
-      border: 1px solid rgba(212, 212, 216, 0.8);
-    }
-
-    /* === GRADIENT BORDER === */
-    .gradient-border {
-      position: relative;
-    }
-
-    .gradient-border::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      padding: 1px;
-      border-radius: inherit;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(168, 85, 247, 0.3), rgba(244, 63, 94, 0.2));
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-    }
-
-    /* === FROSTED HEADER === */
-    .frosted-header {
-      background: rgba(9, 9, 11, 0.8);
-      backdrop-filter: blur(16px) saturate(1.8);
-      border-bottom: 1px solid rgba(63, 63, 70, 0.3);
-    }
-
-    .light .frosted-header {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px) saturate(1.8);
-      border-bottom: 1px solid rgba(212, 212, 216, 0.8);
-    }
-
-    /* === LOGO ICON GRADIENT === */
-    .logo-icon {
-      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #f472b6 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-    }
-
-    /* === FOCUS RING (WCAG 2.4.7) === */
-    *:focus-visible {
-      outline: 2px solid #38bdf8;
-      outline-offset: 2px;
-      border-radius: 4px;
-    }
-
-    .light *:focus-visible {
-      outline-color: #0284c7;
-    }
-
-    /* === TOOLTIP === */
-    .tooltip {
-      position: relative;
-    }
-
-    .tooltip-text {
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-    }
-
-    .tooltip-text.show {
-      opacity: 1;
-    }
-
-    .dark .tooltip-text {
-      background: #27272a;
-      color: #fafafa;
-      border: 1px solid #3f3f46;
-    }
-
-    .light .tooltip-text {
-      background: #18181b;
-      color: #fafafa;
-      border: 1px solid #27272a;
-    }
-
-    /* === SMOOTH TOGGLE === */
-    .toggle-track {
-      transition: background-color 0.2s ease;
-    }
-
-    .toggle-thumb {
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* Light mode body */
-    .light {
-      color-scheme: light;
-    }
-  </style>
-
 </head>
 
-<body class="bg-zinc-950 text-zinc-200 antialiased selection:bg-sky-500/20 selection:text-sky-200 font-sans">
+<body class="bg-zinc-950 text-zinc-200 antialiased font-sans">
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
