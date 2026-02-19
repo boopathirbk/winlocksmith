@@ -12,6 +12,7 @@ export const generatePowerShellScript = (config: AppState, mode: ScriptMode): st
             system.blockStore ||
             system.blockExecutables ||
             web.enforceEdge ||
+            web.forceDns ||
             advanced.blockTaskMgr ||
             advanced.blockCmdPowershell ||
             advanced.blockSettings ||
@@ -614,6 +615,33 @@ Write-Host "[*] Restoring Telemetry..." -ForegroundColor Green
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry"
 `}
 
+# --- FORCE SAFE DNS ---
+${isLock && web.forceDns ? `
+Write-Host "[*] Enforcing Cloudflare Family DNS (blocks adult content & malware)..." -ForegroundColor Magenta
+# Apply to all active network adapters (IPv4 + IPv6)
+$DnsServers = @("1.1.1.3", "1.0.0.3", "2606:4700:4700::1113", "2606:4700:4700::1003")
+$Adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
+foreach ($Adapter in $Adapters) {
+    Write-Host "    -> Setting DNS on: $($Adapter.Name)" -ForegroundColor Gray
+    Set-DnsClientServerAddress -InterfaceIndex $Adapter.InterfaceIndex -ServerAddresses $DnsServers -ErrorAction SilentlyContinue
+}
+# Also enforce Cloudflare Family DoH inside Edge (secondary layer)
+$EdgeDnsPol = "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge"
+if (!(Test-Path $EdgeDnsPol)) { New-Item -Path $EdgeDnsPol -Force | Out-Null }
+Set-RegKey -Path $EdgeDnsPol -Name "DnsOverHttpsMode"      -PropertyType "String" -Value "secure"
+Set-RegKey -Path $EdgeDnsPol -Name "DnsOverHttpsTemplates" -PropertyType "String" -Value "https://family.cloudflare-dns.com/dns-query{?dns}"
+Write-Host "    -> Cloudflare Family DoH active in Edge." -ForegroundColor Magenta
+` : `
+Write-Host "[*] Restoring DNS to automatic (DHCP)..." -ForegroundColor Green
+$Adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
+foreach ($Adapter in $Adapters) {
+    Set-DnsClientServerAddress -InterfaceIndex $Adapter.InterfaceIndex -ResetServerAddresses -ErrorAction SilentlyContinue
+}
+$EdgeDnsPol = "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge"
+Remove-RegValue -Path $EdgeDnsPol -Name "DnsOverHttpsMode"
+Remove-RegValue -Path $EdgeDnsPol -Name "DnsOverHttpsTemplates"
+`}
+
 # Power
 ${isLock && kiosk.disableSleep ? `
 Write-Host "[*] Disabling Sleep Mode..." -ForegroundColor Yellow
@@ -716,7 +744,12 @@ ${advanced.preventUacBypass ?
                 ''
             }
 
-if ($IsHome) { Write-Host "[!] Note: Used 'ICACLS' to secure Home Edition user folders." -ForegroundColor Yellow }
+${web.forceDns ?
+                'Write-Host "[+] Safe DNS (Cloudflare): ACTIVE (1.1.1.3 / 1.0.0.3)" -ForegroundColor Green' :
+                ''
+            }
+
+if ($IsHome) { Write-Host "[!] Note: Used \'ICACLS\' to secure Home Edition user folders." -ForegroundColor Yellow }
 ` : `
 Write-Host "All restrictions have been removed." -ForegroundColor Green
 `}

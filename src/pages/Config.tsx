@@ -163,8 +163,8 @@ const Config: React.FC = () => {
                                     <button
                                         onClick={() => updateWeb('urlFilterMode', 'whitelist')}
                                         className={`px-4 py-2 text-sm font-medium transition-colors ${state.web.urlFilterMode === 'whitelist'
-                                                ? 'bg-sky-600 text-white'
-                                                : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900'
+                                            ? 'bg-sky-600 text-white'
+                                            : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900'
                                             }`}
                                     >
                                         Whitelist
@@ -172,8 +172,8 @@ const Config: React.FC = () => {
                                     <button
                                         onClick={() => updateWeb('urlFilterMode', 'blocklist')}
                                         className={`px-4 py-2 text-sm font-medium transition-colors ${state.web.urlFilterMode === 'blocklist'
-                                                ? 'bg-rose-600 text-white'
-                                                : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900'
+                                            ? 'bg-rose-600 text-white'
+                                            : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900'
                                             }`}
                                     >
                                         Blocklist
@@ -235,6 +235,23 @@ const Config: React.FC = () => {
                                 <MiniToggle label="Force SmartScreen" checked={state.web.forceSmartScreen} onChange={(v: boolean) => updateWeb('forceSmartScreen', v)} />
                                 <MiniToggle label="Allow Password Manager" checked={state.web.allowPasswordManager} onChange={(v: boolean) => updateWeb('allowPasswordManager', v)} />
                             </div>
+                        </div>
+                    )}
+
+                    {/* Force Safe DNS */}
+                    <ToggleCard
+                        title="Force Safe DNS"
+                        icon={ICONS.WifiOff}
+                        accent="violet"
+                        checked={state.web.forceDns}
+                        onChange={(v: boolean) => updateWeb('forceDns', v)}
+                        description="Force Cloudflare Family DNS (1.1.1.3) on all network adapters + Edge. Blocks adult content & malware at the DNS level."
+                    />
+                    {state.web.forceDns && (
+                        <div className="flex flex-wrap gap-2 px-1">
+                            {['1.1.1.3', '1.0.0.3', '2606:4700:4700::1113', '2606:4700:4700::1003'].map(ip => (
+                                <span key={ip} className="font-mono text-xs px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400">{ip}</span>
+                            ))}
                         </div>
                     )}
                 </section>

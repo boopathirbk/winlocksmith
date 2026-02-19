@@ -39,6 +39,7 @@ export interface WebConfig {
   blockOtherBrowsers: boolean;
   allowPasswordManager: boolean;
   forceSmartScreen: boolean;
+  forceDns: boolean; // Force Cloudflare Family DNS (1.1.1.3 / 1.0.0.3) — blocks adult + malware
 }
 
 export type ScriptMode = 'LOCK' | 'UNLOCK';
