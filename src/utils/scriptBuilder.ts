@@ -540,52 +540,28 @@ foreach ($User in $TargetUsers) {
 Write-Host ""
 Write-Host "--- Configuring Machine-Wide Policies ---" -ForegroundColor Cyan
 
-# Store Block — Multi-Layer (works on Home, Pro, Enterprise, Education)
-# Layer 1: Registry  — DisableStoreApps blocks installs on ALL editions
-#                      RemoveWindowsStore hides Store on Enterprise/Education
-# Layer 2: Services  — StoreSvc (install), wsappx (runtime)
-# Layer 3: Firewall  — outbound block on Store network endpoints
+# Store Block — Registry Policy (works on all Windows editions, fully reversible)
+# DisableStoreApps    — blocks Store installs/downloads on ALL editions (Home, Pro, Edu, Ent)
+# RemoveWindowsStore  — hides Store UI on Enterprise/Education
+# DisableWindowsConsumerFeatures — blocks consumer suggestions / auto-installs
+# NOTE: We do NOT use Remove-AppxPackage because Add-AppxPackage has no -User param,
+#       making per-user restore from a different session impossible. Registry policy is
+#       instant to apply and instantly reversible — the correct approach.
 ${isLock && system.blockStore ? `
 Write-Host "[*] Blocking Microsoft Store for standard users..." -ForegroundColor Yellow
-
-# --- Layer 1: Registry Policies (prevents new installs via policy) ---
-Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"   -Value 1
-Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore" -Value 1
-Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" -Name "DisableWindowsConsumerFeatures" -Value 1
-
-# --- Layer 2: Remove Store AppxPackage per standard user (PRIMARY BLOCK) ---
-# Removes the Store UWP registration from each standard user's profile.
-# Admins are in $TargetUsers' exclusion list — their Store is never touched.
-Write-Host "    -> Removing Store AppxPackage for standard users..." -ForegroundColor Yellow
-foreach ($StoreUser in $TargetUsers) {
-    $UserSID = $StoreUser.SID.Value
-    $Pkg = Get-AppxPackage -User $UserSID -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue
-    if ($Pkg) {
-        Write-Host "       Removing for: $($StoreUser.Name)" -ForegroundColor Gray
-        Remove-AppxPackage -Package $Pkg.PackageFullName -User $UserSID -ErrorAction SilentlyContinue
-    }
-}
-Write-Host "    -> Store blocked for standard users. Admin account unaffected." -ForegroundColor Green
+Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"             -PropertyType "DWord" -Value 1
+Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore"           -PropertyType "DWord" -Value 1
+Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" -Name "DisableWindowsConsumerFeatures" -PropertyType "DWord" -Value 1
+Write-Host "    -> Microsoft Store blocked via policy (affects all standard users)." -ForegroundColor Green
 ` : `
-Write-Host "[*] Restoring Windows Store for standard users..." -ForegroundColor Green
-# Remove registry policies
+Write-Host "[*] Restoring Microsoft Store..." -ForegroundColor Green
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore"
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" -Name "DisableWindowsConsumerFeatures"
-# Re-register Store AppxPackage for each standard user
-$GlobalStorePkg = Get-AppxPackage -AllUsers -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue | Select-Object -First 1
-if ($GlobalStorePkg) {
-    foreach ($StoreUser in $TargetUsers) {
-        $UserSID = $StoreUser.SID.Value
-        Write-Host "    -> Restoring Store for: $($StoreUser.Name)" -ForegroundColor Gray
-        Add-AppxPackage -DisableDevelopmentMode -Register "$($GlobalStorePkg.InstallLocation)\AppxManifest.xml" -User $UserSID -ErrorAction SilentlyContinue
-    }
-} else {
-    Write-Host "    [!] Store package not found globally. Run 'wsreset.exe' as admin to reinstall." -ForegroundColor Yellow
-}
+Write-Host "    -> Microsoft Store policy removed. Store is accessible again immediately." -ForegroundColor Green
 `}
 
-# Anti-Bypass (UAC Hardening)
+# Anti - Bypass(UAC Hardening)
 ${isLock && advanced.preventUacBypass ? `
 Write-Host "[*] Enabling Anti-Bypass (Disabling UAC Prompts for Standard Users)..." -ForegroundColor Red
 # ConsentPromptBehaviorUser: 0 = Automatically deny elevation requests.
@@ -605,8 +581,8 @@ Write-Host "[*] Restoring Updates..." -ForegroundColor Green
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU" -Name "NoAutoUpdate"
 `}
 
-# Telemetry (Value 0 = Security/Off. Fully enforced on Enterprise/Education only;
-# on Home/Pro, value 0 degrades to Basic/Required level — still reduces telemetry significantly)
+# Telemetry(Value 0 = Security / Off.Fully enforced on Enterprise / Education only;
+# on Home / Pro, value 0 degrades to Basic / Required level — still reduces telemetry significantly)
 ${isLock && kiosk.disableTelemetry ? `
 Write-Host "[*] Disabling Telemetry..." -ForegroundColor Yellow
 Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry" -Value 0
@@ -615,8 +591,8 @@ Write-Host "[*] Restoring Telemetry..." -ForegroundColor Green
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" -Name "AllowTelemetry"
 `}
 
-# --- FORCE SAFE DNS ---
-${isLock && web.forceDns ? `
+# -- - FORCE SAFE DNS-- -
+    ${isLock && web.forceDns ? `
 Write-Host "[*] Enforcing Cloudflare Family DNS (blocks adult content & malware)..." -ForegroundColor Magenta
 # Apply to all active network adapters (IPv4 + IPv6)
 $DnsServers = @("1.1.1.3", "1.0.0.3", "2606:4700:4700::1113", "2606:4700:4700::1003")
@@ -657,8 +633,8 @@ powercfg -restoredefaultschemes
 powercfg -h on
 `}
 
-# --- 3. EXECUTION CONTROL (SRP) ---
-$SRP = "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers"
+# -- - 3. EXECUTION CONTROL(SRP)-- -
+    $SRP = "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers"
 
 ${isLock && system.blockExecutables ? `
 if (-not $IsHome) {
@@ -704,15 +680,15 @@ if(Test-Path "$SRP\\0\\Paths") { Remove-Item "$SRP\\0\\Paths\\*" -Recurse -Force
 if(Test-Path "$SRP\\262144\\Paths") { Remove-Item "$SRP\\262144\\Paths\\*" -Recurse -Force -ErrorAction SilentlyContinue }
 `}
 
-Write-Host "Restarting Explorer..." -ForegroundColor DarkGray
-Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 2
+Write - Host "Restarting Explorer..." - ForegroundColor DarkGray
+Stop - Process - Name explorer - Force - ErrorAction SilentlyContinue
+Start - Sleep - Seconds 2
 
-# --- VERIFICATION REPORT ---
-Write-Host ""
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "      VERIFICATION REPORT (ACTIVE)        " -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
+# -- - VERIFICATION REPORT-- -
+    Write - Host ""
+Write - Host "==========================================" - ForegroundColor Cyan
+Write - Host "      VERIFICATION REPORT (ACTIVE)        " - ForegroundColor Cyan
+Write - Host "==========================================" - ForegroundColor Cyan
 ${isLock ? `
 ${system.blockUsb ?
                 'Write-Host "[+] USB Storage:          BLOCKED (Standard Users)" -ForegroundColor Green' :
@@ -753,8 +729,8 @@ if ($IsHome) { Write-Host "[!] Note: Used \'ICACLS\' to secure Home Edition user
 ` : `
 Write-Host "All restrictions have been removed." -ForegroundColor Green
 `}
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "DONE." -ForegroundColor Green
-Read-Host "Press Enter to exit..."
-`;
+Write - Host "==========================================" - ForegroundColor Cyan
+Write - Host "DONE." - ForegroundColor Green
+Read - Host "Press Enter to exit..."
+    `;
 }
