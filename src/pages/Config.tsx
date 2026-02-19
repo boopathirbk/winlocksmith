@@ -11,7 +11,7 @@ const Config: React.FC = () => {
     const [previewScript, setPreviewScript] = useState('');
     const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
-    const [copyTooltip, setCopyTooltip] = useState(false);
+    const [copyTooltip, setCopyTooltip] = useState<'lock' | 'restore' | null>(null);
 
     useEffect(() => {
         const script = generatePowerShellScript(state, previewMode);
@@ -73,13 +73,14 @@ const Config: React.FC = () => {
         URL.revokeObjectURL(url);
     };
 
-    const handleCopy = useCallback(async () => {
+    const handleCopy = useCallback(async (scriptMode: ScriptMode) => {
         try {
-            await navigator.clipboard.writeText(previewScript);
-            setCopyTooltip(true);
-            setTimeout(() => setCopyTooltip(false), 1800);
+            const script = generatePowerShellScript(state, scriptMode);
+            await navigator.clipboard.writeText(script);
+            setCopyTooltip(scriptMode === 'LOCK' ? 'lock' : 'restore');
+            setTimeout(() => setCopyTooltip(null), 1800);
         } catch { /* clipboard API may fail in insecure contexts */ }
-    }, [previewScript]);
+    }, [state]);
 
     // Close modals on Escape (WCAG 2.1.1)
     useEffect(() => {
@@ -205,13 +206,23 @@ const Config: React.FC = () => {
                                 <ICONS.Terminal className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Preview</span>
                             </button>
 
-                            {/* Copy with tooltip */}
+                            {/* Copy Lockdown with tooltip */}
                             <div className="tooltip relative">
-                                <span className={`tooltip-text ${copyTooltip ? 'show' : ''}`} role="status" aria-live="polite">
-                                    {copyTooltip ? '✓ Copied!' : ''}
+                                <span className={`tooltip-text ${copyTooltip === 'lock' ? 'show' : ''}`} role="status" aria-live="polite">
+                                    {copyTooltip === 'lock' ? '✓ Copied!' : ''}
                                 </span>
-                                <button onClick={handleCopy} className="flex items-center gap-2 px-3.5 py-2 dark:bg-zinc-800 bg-zinc-100 dark:hover:bg-zinc-700 hover:bg-zinc-200 dark:text-zinc-300 text-zinc-700 rounded-lg text-sm font-medium transition-colors border dark:border-zinc-700/50 border-zinc-300" aria-label="Copy script to clipboard">
-                                    <ICONS.Copy className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Copy</span>
+                                <button onClick={() => handleCopy('LOCK')} className="flex items-center gap-2 px-3.5 py-2 dark:bg-zinc-800 bg-zinc-100 dark:hover:bg-zinc-700 hover:bg-zinc-200 dark:text-zinc-300 text-zinc-700 rounded-lg text-sm font-medium transition-colors border dark:border-zinc-700/50 border-zinc-300" aria-label="Copy Lockdown script to clipboard">
+                                    <ICONS.Copy className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Copy Lock</span>
+                                </button>
+                            </div>
+
+                            {/* Copy Restore with tooltip */}
+                            <div className="tooltip relative">
+                                <span className={`tooltip-text ${copyTooltip === 'restore' ? 'show' : ''}`} role="status" aria-live="polite">
+                                    {copyTooltip === 'restore' ? '✓ Copied!' : ''}
+                                </span>
+                                <button onClick={() => handleCopy('UNLOCK')} className="flex items-center gap-2 px-3.5 py-2 dark:bg-zinc-800 bg-zinc-100 dark:hover:bg-zinc-700 hover:bg-zinc-200 dark:text-emerald-400 text-emerald-600 rounded-lg text-sm font-medium transition-colors border dark:border-zinc-700/50 border-zinc-300" aria-label="Copy Restore script to clipboard">
+                                    <ICONS.RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /> <span className="hidden sm:inline">Copy Restore</span>
                                 </button>
                             </div>
 
@@ -232,10 +243,18 @@ const Config: React.FC = () => {
                             <button onClick={() => setShowPreviewModal(false)} className="dark:text-zinc-500 text-zinc-400 hover:text-rose-500 transition-colors" aria-label="Close preview"><ICONS.XCircle className="w-5 h-5" /></button>
                         </div>
                         <div className="p-5 dark:bg-zinc-950 bg-zinc-50 overflow-auto flex-1 font-mono text-xs dark:text-sky-300/80 text-zinc-700 whitespace-pre leading-relaxed" role="region" aria-label="Generated PowerShell script">{previewScript}</div>
-                        <div className="p-3 border-t dark:border-zinc-800/50 border-zinc-200 flex justify-end gap-2">
+                        <div className="p-3 border-t dark:border-zinc-800/50 border-zinc-200 flex justify-between items-center gap-2">
                             <button onClick={() => setPreviewMode(previewMode === 'LOCK' ? 'UNLOCK' : 'LOCK')} className="px-4 py-2 rounded-lg dark:bg-zinc-800 bg-zinc-100 border dark:border-zinc-700/50 border-zinc-300 dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 text-sm font-medium transition-colors">
                                 Switch to {previewMode === 'LOCK' ? 'Restore' : 'Lockdown'} Script
                             </button>
+                            <div className="tooltip relative">
+                                <span className={`tooltip-text ${copyTooltip === (previewMode === 'LOCK' ? 'lock' : 'restore') ? 'show' : ''}`} role="status" aria-live="polite">
+                                    {copyTooltip ? '✓ Copied!' : ''}
+                                </span>
+                                <button onClick={() => handleCopy(previewMode)} className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-semibold transition-all hover:opacity-90">
+                                    <ICONS.Copy className="w-3.5 h-3.5" aria-hidden="true" /> Copy Script
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
