@@ -19,7 +19,8 @@ WinLocksmith is smart. It inspects the target machine's Windows Edition (Home vs
 
 ### 🌐 Advanced Edge Kiosk Mode
 Turn Microsoft Edge into a secure, focused browser environment:
-- **Strict Whitelisting**: Allow only specific domains or URLs.
+- **Whitelist Mode**: Allow only specific domains — everything else is blocked (`URLBlocklist *` + `URLAllowlist`).
+- **Blocklist Mode**: Block specific domains while allowing everything else (`URLBlocklist` entries only).
 - **Extension Control**: Block all extensions or allow only specific IDs.
 - **Privacy First**: Disable telemetry, guest mode, and developer tools.
 - **PDF Security**: Control internal PDF viewer access.
@@ -27,7 +28,7 @@ Turn Microsoft Edge into a secure, focused browser environment:
 ### 🚫 Application & Execution Control
 Prevent unauthorized software from running:
 - **SRP (Software Restriction Policies)**: Block executables from running in user-writable directories (Downloads, AppData, etc.).
-- **Store Blocking**: Disable the Microsoft Store and pre-installed "Consumer Features" (like Candy Crush).
+- **Store Blocking**: Disable the Microsoft Store for Standard Users (Administrators retain full access).
 - **Custom Blocklist**: Ban specific applications (e.g., `discord.exe`, `steam.exe`).
 
 ### 🔒 User Isolation & Anti-Bypass

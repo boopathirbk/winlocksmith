@@ -52,43 +52,65 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
     const EdgePol = `$HiveRoot\\Software\\Policies\\Microsoft\\Edge`;
 
     if (isLock && web.enforceEdge) {
-        // Construct allowed URLs list
         const allowedSitesList = [...web.allowedUrls];
+        // NOTE: 'file://*' wildcard is NOT supported by Edge URL policies.
+        // Per Microsoft docs, blob:* is fine; for local PDF access omit the file:// wildcard.
         if (web.allowPdfView) {
-            allowedSitesList.push("file://*", "blob:*");
+            allowedSitesList.push("blob:*");
         }
-
-        const mapAllowedSites = allowedSitesList.map(url => `"${sanitize(url)}"`).join(',');
+        // Always include Edge internal URIs in whitelist so browser doesn't break
+        const edgeInternalUrls = ["edge://*", "chrome-extension://*"];
+        const finalAllowlist = web.urlFilterMode === 'whitelist'
+            ? [...edgeInternalUrls, ...allowedSitesList]
+            : [];
+        const mapAllowedSites = finalAllowlist.map(url => `"${sanitize(url)}"`).join(',');
+        const mapBlockedSites = web.blockedUrls.map(url => `"${sanitize(url)}"`).join(',');
 
         edgeScript += `
-    # [Edge] Enforce Kiosk Mode & URL Whitelist
+    # [Edge] Enforce Kiosk Mode & URL Filtering
     Write-Host "    -> Configuring Edge Policies..." -ForegroundColor Gray
-    
-    ${web.whitelistOnly ? `
-    # [Strict Mode] Block all URLs by default (Subkey "URLBlocklist", Value "1" = "*")
-    Remove-RegValue -Path "${EdgePol}" -Name "URLBlocklist" 
-    Set-RegKey -Path "${EdgePol}\\URLBlocklist" -Name "1" -PropertyType "String" -Value "*"
-    ` : `
-    # [Open Mode] Allow all URLs (Remove Blocklist)
+
+    ${web.urlFilterMode === 'whitelist' ? `
+    # [Whitelist Mode] Block all URLs by default, then allow only listed sites
     Remove-RegValue -Path "${EdgePol}" -Name "URLBlocklist"
     Remove-RegKey -Path "${EdgePol}\\URLBlocklist"
+    if (!(Test-Path "${EdgePol}\\URLBlocklist")) { New-Item -Path "${EdgePol}\\URLBlocklist" -Force | Out-Null }
+    Set-RegKey -Path "${EdgePol}\\URLBlocklist" -Name "1" -PropertyType "String" -Value "*"
+    ` : `
+    # [Blocklist Mode] Allow all URLs by default, block only listed sites
+    Remove-RegValue -Path "${EdgePol}" -Name "URLBlocklist"
+    Remove-RegKey -Path "${EdgePol}\\URLBlocklist"
+    ${web.blockedUrls.length > 0 ? `
+    if (!(Test-Path "${EdgePol}\\URLBlocklist")) { New-Item -Path "${EdgePol}\\URLBlocklist" -Force | Out-Null }
+    $bi = 1
+    $BlockedSites = @(${mapBlockedSites})
+    foreach ($burl in $BlockedSites) {
+        Set-RegKey -Path "${EdgePol}\\URLBlocklist" -Name "$bi" -PropertyType "String" -Value $burl
+        $bi++
+    }
+    ` : `# No blocked URLs configured — all sites accessible`}
     `}
 
-    # Block all Extensions (Subkey "ExtensionInstallBlocklist", Value "1" = "*")
+    # Block all Extensions
     Remove-RegValue -Path "${EdgePol}" -Name "ExtensionInstallBlocklist"
+    Remove-RegKey -Path "${EdgePol}\\ExtensionInstallBlocklist"
+    if (!(Test-Path "${EdgePol}\\ExtensionInstallBlocklist")) { New-Item -Path "${EdgePol}\\ExtensionInstallBlocklist" -Force | Out-Null }
     Set-RegKey -Path "${EdgePol}\\ExtensionInstallBlocklist" -Name "1" -PropertyType "String" -Value "*"
-    
-    # Clear old allowlists to prevent accumulation
+
+    # Clear old allowlists
     Remove-RegKey -Path "${EdgePol}\\URLAllowlist"
     Remove-RegKey -Path "${EdgePol}\\ExtensionInstallAllowlist"
-    
-    # Add new allowed URLs (Always added, useful even in Open Mode for favorites/exceptions)
+
+    ${web.urlFilterMode === 'whitelist' ? `
+    # [Whitelist Mode] Add edge://* first (required — prevents Edge internal pages from breaking)
+    # Then add user-specified allowed URLs
     $i = 1
     $AllowedSites = @(${mapAllowedSites})
     foreach ($url in $AllowedSites) {
         Set-RegKey -Path "${EdgePol}\\URLAllowlist" -Name "$i" -PropertyType "String" -Value $url
         $i++
     }
+    ` : ``}
 
     # Add new allowed Extensions
     $j = 1
@@ -125,10 +147,12 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
 
     ${web.forceStartup ? `
     # [Strict Mode] Force Startup Pages & Home
+    # Note: Uses only user-specified URLs (not internal edge://* entries)
     Set-RegKey -Path "${EdgePol}" -Name "RestoreOnStartup" -Value 4
     Remove-RegKey -Path "${EdgePol}\\RestoreOnStartupURLs"
     $k = 1
-    foreach ($url in $AllowedSites) {
+    $StartupUrls = @(${allowedSitesList.map(url => `"${sanitize(url)}"`).join(',')})
+    foreach ($url in $StartupUrls) {
         Set-RegKey -Path "${EdgePol}\\RestoreOnStartupURLs" -Name "$k" -PropertyType "String" -Value $url
         $k++
     }
@@ -553,7 +577,7 @@ if ($GlobalStorePkg) {
     foreach ($StoreUser in $TargetUsers) {
         $UserSID = $StoreUser.SID.Value
         Write-Host "    -> Restoring Store for: $($StoreUser.Name)" -ForegroundColor Gray
-        Add-AppxPackage -DisableDevelopmentMode -Register "$($GlobalStorePkg.InstallLocation)\\AppxManifest.xml" -ErrorAction SilentlyContinue
+        Add-AppxPackage -DisableDevelopmentMode -Register "$($GlobalStorePkg.InstallLocation)\AppxManifest.xml" -User $UserSID -ErrorAction SilentlyContinue
     }
 } else {
     Write-Host "    [!] Store package not found globally. Run 'wsreset.exe' as admin to reinstall." -ForegroundColor Yellow
@@ -673,7 +697,7 @@ ${system.blockStore ?
             }
 
 ${web.enforceEdge ?
-                `Write-Host "[+] Edge Kiosk Mode:      ACTIVE (${web.allowedUrls.length} URLs allowed)" -ForegroundColor Green` :
+                `Write-Host "[+] Edge Kiosk Mode:      ACTIVE (${web.urlFilterMode === 'whitelist' ? web.allowedUrls.length + ' URLs allowed' : web.blockedUrls.length + ' URLs blocked'})" -ForegroundColor Green` :
                 'Write-Host "[-] Edge Kiosk Mode:      INACTIVE" -ForegroundColor Gray'
             }
 

@@ -49,6 +49,8 @@ const Config: React.FC = () => {
 
     const addUrl = (url: string) => { if (url && !state.web.allowedUrls.includes(url)) updateWeb('allowedUrls', [...state.web.allowedUrls, url]); };
     const removeUrl = (url: string) => updateWeb('allowedUrls', state.web.allowedUrls.filter(u => u !== url));
+    const addBlockedUrl = (url: string) => { if (url && !state.web.blockedUrls.includes(url)) updateWeb('blockedUrls', [...state.web.blockedUrls, url]); };
+    const removeBlockedUrl = (url: string) => updateWeb('blockedUrls', state.web.blockedUrls.filter(u => u !== url));
     const addExtension = (id: string) => { if (id && !state.web.allowedExtensions.includes(id)) updateWeb('allowedExtensions', [...state.web.allowedExtensions, id]); };
     const removeExtension = (id: string) => updateWeb('allowedExtensions', state.web.allowedExtensions.filter(e => e !== id));
     const addBlockedApp = (app: string) => { if (app && !state.advanced.blockedAppList.includes(app)) updateAdvanced('blockedAppList', [...state.advanced.blockedAppList, app]); };
@@ -153,25 +155,82 @@ const Config: React.FC = () => {
 
                     {state.web.enforceEdge && (
                         <div className="dark:bg-zinc-900/40 bg-white dark:border-zinc-800/40 border-zinc-200 border rounded-xl p-5 space-y-5">
-                            <fieldset>
-                                <legend className="text-sm font-semibold dark:text-white text-zinc-900 mb-2">Whitelisted URLs</legend>
-                                <div className="flex gap-2">
-                                    <label htmlFor="urlInput" className="sr-only">Enter URL to whitelist</label>
-                                    <input type="text" id="urlInput" placeholder="example.com" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-sky-500/50 focus:border-sky-500 transition-colors font-mono" onKeyDown={(e) => { if (e.key === 'Enter') { addUrl(e.currentTarget.value); e.currentTarget.value = ''; } }} />
-                                    <button onClick={() => { const el = document.getElementById('urlInput') as HTMLInputElement; addUrl(el.value); el.value = ''; }} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
+
+                            {/* Mode Toggle */}
+                            <div>
+                                <p className="text-xs font-semibold dark:text-zinc-400 text-zinc-500 uppercase tracking-wider mb-2">URL Filtering Mode</p>
+                                <div className="inline-flex rounded-lg border dark:border-zinc-700/50 border-zinc-300 overflow-hidden">
+                                    <button
+                                        onClick={() => updateWeb('urlFilterMode', 'whitelist')}
+                                        className={`px-4 py-2 text-sm font-medium transition-colors ${state.web.urlFilterMode === 'whitelist'
+                                                ? 'bg-sky-600 text-white'
+                                                : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900'
+                                            }`}
+                                    >
+                                        Whitelist
+                                    </button>
+                                    <button
+                                        onClick={() => updateWeb('urlFilterMode', 'blocklist')}
+                                        className={`px-4 py-2 text-sm font-medium transition-colors ${state.web.urlFilterMode === 'blocklist'
+                                                ? 'bg-rose-600 text-white'
+                                                : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900'
+                                            }`}
+                                    >
+                                        Blocklist
+                                    </button>
                                 </div>
-                                <div className="mt-2 space-y-1">
-                                    {state.web.allowedUrls.map(url => (
-                                        <div key={url} className="flex justify-between items-center text-sm p-2.5 dark:bg-zinc-800/40 bg-zinc-50 rounded-lg border dark:border-zinc-700/30 border-zinc-200">
-                                            <span className="dark:text-zinc-300 text-zinc-700 font-mono text-xs">{url}</span>
-                                            <button onClick={() => removeUrl(url)} aria-label={`Remove ${url}`}><ICONS.XCircle className="w-4 h-4 dark:text-zinc-600 text-zinc-400 hover:text-rose-500 transition-colors" /></button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </fieldset>
+                                <p className="text-xs dark:text-zinc-500 text-zinc-500 mt-1.5">
+                                    {state.web.urlFilterMode === 'whitelist'
+                                        ? 'Only listed sites are accessible. Everything else is blocked.'
+                                        : 'Listed sites are blocked. Everything else is accessible.'}
+                                </p>
+                            </div>
+
+                            {/* Whitelist Mode — allowed URLs */}
+                            {state.web.urlFilterMode === 'whitelist' && (
+                                <fieldset>
+                                    <legend className="text-sm font-semibold dark:text-white text-zinc-900 mb-2">Allowed URLs</legend>
+                                    <div className="flex gap-2">
+                                        <label htmlFor="urlInput" className="sr-only">Enter URL to allow</label>
+                                        <input type="text" id="urlInput" placeholder="example.com" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-sky-500/50 focus:border-sky-500 transition-colors font-mono" onKeyDown={(e) => { if (e.key === 'Enter') { addUrl(e.currentTarget.value); e.currentTarget.value = ''; } }} />
+                                        <button onClick={() => { const el = document.getElementById('urlInput') as HTMLInputElement; addUrl(el.value); el.value = ''; }} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
+                                    </div>
+                                    <div className="mt-2 space-y-1">
+                                        {state.web.allowedUrls.map(url => (
+                                            <div key={url} className="flex justify-between items-center text-sm p-2.5 dark:bg-zinc-800/40 bg-zinc-50 rounded-lg border dark:border-sky-800/30 border-sky-200">
+                                                <span className="dark:text-zinc-300 text-zinc-700 font-mono text-xs">{url}</span>
+                                                <button onClick={() => removeUrl(url)} aria-label={`Remove ${url}`}><ICONS.XCircle className="w-4 h-4 dark:text-zinc-600 text-zinc-400 hover:text-rose-500 transition-colors" /></button>
+                                            </div>
+                                        ))}
+                                        {state.web.allowedUrls.length === 0 && <p className="text-xs dark:text-zinc-600 text-zinc-500 italic px-1">No URLs added — Edge will block all sites.</p>}
+                                    </div>
+                                </fieldset>
+                            )}
+
+                            {/* Blocklist Mode — blocked URLs */}
+                            {state.web.urlFilterMode === 'blocklist' && (
+                                <fieldset>
+                                    <legend className="text-sm font-semibold dark:text-white text-zinc-900 mb-2">Blocked URLs</legend>
+                                    <div className="flex gap-2">
+                                        <label htmlFor="blockedUrlInput" className="sr-only">Enter URL to block</label>
+                                        <input type="text" id="blockedUrlInput" placeholder="facebook.com" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-rose-500/50 focus:border-rose-500 transition-colors font-mono" onKeyDown={(e) => { if (e.key === 'Enter') { addBlockedUrl(e.currentTarget.value); e.currentTarget.value = ''; } }} />
+                                        <button onClick={() => { const el = document.getElementById('blockedUrlInput') as HTMLInputElement; addBlockedUrl(el.value); el.value = ''; }} className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
+                                    </div>
+                                    <div className="mt-2 space-y-1">
+                                        {state.web.blockedUrls.map(url => (
+                                            <div key={url} className="flex justify-between items-center text-sm p-2.5 dark:bg-zinc-800/40 bg-zinc-50 rounded-lg border dark:border-rose-800/30 border-rose-200">
+                                                <span className="dark:text-zinc-300 text-zinc-700 font-mono text-xs">{url}</span>
+                                                <button onClick={() => removeBlockedUrl(url)} aria-label={`Remove block ${url}`}><ICONS.XCircle className="w-4 h-4 dark:text-zinc-600 text-zinc-400 hover:text-rose-500 transition-colors" /></button>
+                                            </div>
+                                        ))}
+                                        {state.web.blockedUrls.length === 0 && <p className="text-xs dark:text-zinc-600 text-zinc-500 italic px-1">No URLs added — all sites accessible.</p>}
+                                    </div>
+                                </fieldset>
+                            )}
+
                             <div className="grid md:grid-cols-2 gap-3">
                                 <MiniToggle label="Block File Uploads" checked={state.web.blockFileUploads} onChange={(v: boolean) => updateWeb('blockFileUploads', v)} />
-                                <MiniToggle label="Force Startup Pages" checked={state.web.forceStartup} onChange={(v: boolean) => updateWeb('forceStartup', v)} />
+                                {state.web.urlFilterMode === 'whitelist' && <MiniToggle label="Force Startup Pages" checked={state.web.forceStartup} onChange={(v: boolean) => updateWeb('forceStartup', v)} />}
                                 <MiniToggle label="Allow PDF Listing" checked={state.web.allowPdfView} onChange={(v: boolean) => updateWeb('allowPdfView', v)} />
                                 <MiniToggle label="Force SmartScreen" checked={state.web.forceSmartScreen} onChange={(v: boolean) => updateWeb('forceSmartScreen', v)} />
                                 <MiniToggle label="Allow Password Manager" checked={state.web.allowPasswordManager} onChange={(v: boolean) => updateWeb('allowPasswordManager', v)} />

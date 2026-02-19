@@ -137,14 +137,15 @@ export const INITIAL_STATE = {
   },
   web: {
     enforceEdge: false,
+    urlFilterMode: 'whitelist' as 'whitelist' | 'blocklist',
     allowedUrls: [],
+    blockedUrls: [],
     allowedExtensions: [],
     allowPdfView: true,
-    whitelistOnly: true, // Default to strict kiosk mode
     blockFileUploads: false,
     forceStartup: false,
     blockOtherBrowsers: false,
     allowPasswordManager: false,
-    forceSmartScreen: true, // Security best practice
+    forceSmartScreen: true,
   },
 };

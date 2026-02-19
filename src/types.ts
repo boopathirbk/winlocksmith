@@ -29,15 +29,16 @@ export interface KioskConfig {
 
 export interface WebConfig {
   enforceEdge: boolean;
-  allowedUrls: string[];
+  urlFilterMode: 'whitelist' | 'blocklist'; // whitelist = allow only listed; blocklist = block only listed
+  allowedUrls: string[];   // used in whitelist mode
+  blockedUrls: string[];   // used in blocklist mode
   allowedExtensions: string[];
   allowPdfView: boolean;
-  whitelistOnly: boolean; // If true, block all sites except allowedUrls. If false, allow all.
-  blockFileUploads: boolean; // If true, block file uploads.
-  forceStartup: boolean; // If true, force open allowedUrls on startup.
-  blockOtherBrowsers: boolean; // If true, block Chrome, Firefox, etc.
-  allowPasswordManager: boolean; // If true, allow password saving.
-  forceSmartScreen: boolean; // If true, enforce SmartScreen.
+  blockFileUploads: boolean;
+  forceStartup: boolean;
+  blockOtherBrowsers: boolean;
+  allowPasswordManager: boolean;
+  forceSmartScreen: boolean;
 }
 
 export type ScriptMode = 'LOCK' | 'UNLOCK';
