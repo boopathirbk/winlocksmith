@@ -135,7 +135,7 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
 
     Set-RegKey -Path "${EdgePol}" -Name "ShowHomeButton" -Value 1
     Set-RegKey -Path "${EdgePol}" -Name "HomepageIsNewTabPage" -Value 0
-    Set-RegKey -Path "${EdgePol}" -Name "HomepageLocation" -PropertyType "String" -Value "${allowedSitesList[0]}"
+    ${allowedSitesList.length > 0 ? `Set-RegKey -Path "${EdgePol}" -Name "HomepageLocation" -PropertyType "String" -Value "${allowedSitesList[0]}"` : `# HomepageLocation skipped — no URL in allowlist`}
     ` : `
     # [Open Mode] Let user control startup/home
     Remove-RegValue -Path "${EdgePol}" -Name "RestoreOnStartup"
@@ -218,11 +218,7 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
         // This prevents data exfiltration while still allowing Bluetooth Audio pairing if settings are enabled.
         baseAppsToBlock.push("fsquirt.exe");
 
-        if (system.blockStore) {
-            // "RemoveWindowsStore" policy only works on Enterprise/Education.
-            // For Home/Pro, we explicitly block the Store executable via DisallowRun.
-            baseAppsToBlock.push("WinStore.App.exe", "Microsoft.WindowsStore.exe");
-        }
+        // Microsoft Store is blocked via HKLM registry + services + firewall (not DisallowRun).
         if (advanced.blockSpecificApps) {
             baseAppsToBlock.push(...advanced.blockedAppList);
         }
@@ -331,17 +327,16 @@ function Apply-UserPolicy {
     # Settings / Control Panel Logic (Handles Peripherals Exception)
     ${isLock && (advanced.blockSettings || advanced.blockControlPanel) ? `
         ${system.allowPeripherals ? `
-        # [Peripherals Allowed] Hide all settings EXCEPT Bluetooth & Printers. 
-        # Overrides 'Block Control Panel' to ensure pairing is possible.
+        # [Peripherals Allowed] Hide all settings EXCEPT Bluetooth & Printers.
+        # Overrides 'Block Control Panel' to ensure device pairing is still possible.
         Write-Host "    -> Blocking Settings (Except Bluetooth/Printers)..." -ForegroundColor Yellow
         Remove-RegValue -Path $ExplorerPol -Name "NoControlPanel"
         Set-RegKey -Path $ExplorerPol -Name "SettingsPageVisibility" -PropertyType "String" -Value "showonly:bluetooth;connecteddevices;printers"
         ` : `
         # [Strict] Block All Settings & Control Panel
-        ${advanced.blockSettings || advanced.blockControlPanel ? `
+        Write-Host "    -> Blocking All Settings & Control Panel..." -ForegroundColor Yellow
         Set-RegKey -Path $ExplorerPol -Name "NoControlPanel" -Value 1
         Remove-RegValue -Path $ExplorerPol -Name "SettingsPageVisibility"
-        ` : ``}
         `}
     ` : `
         # Restore Settings Access
@@ -350,16 +345,30 @@ function Apply-UserPolicy {
     `}
 
     # USB Access Control (User Level - Standard Users Only)
-    # This ensures Admins on BYOD devices are not locked out.
+    # Uses specific device class GUIDs so ONLY removable USB disks are blocked.
+    # Internal drives (C:, D:), network shares, and the Downloads folder are NOT affected.
+    #
+    # GUIDs targeted:
+    #   {53f5630d-b6bf-11d0-94f2-00a0c91efb8b} = Removable Disks (USB flash drives, external HDDs)
+    #   {6AC27878-A6FA-4155-BA85-F9857ED70701} = WPD/MTP devices  (Android phones, media players)
+    #   {F33FDC04-D1AC-4E8E-9A30-19BBD4B108AE} = WPD (secondary WPD class for older devices)
     ${isLock && system.blockUsb ? `
-    Write-Host "    -> Blocking USB Storage Access (User Policy)..." -ForegroundColor Yellow
-    $RemovableStorage = "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices"
-    if (!(Test-Path $RemovableStorage)) { New-Item -Path $RemovableStorage -Force | Out-Null }
-    # Deny All Removable Disks (Reads/Writes)
-    Set-RegKey -Path $RemovableStorage -Name "Deny_All" -Value 1
+    Write-Host "    -> Blocking USB Removable Storage only (Deny_Read + Deny_Write per class GUID)..." -ForegroundColor Yellow
+    $UsbClass1 = "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices\\{53f5630d-b6bf-11d0-94f2-00a0c91efb8b}"
+    $UsbClass2 = "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices\\{6AC27878-A6FA-4155-BA85-F9857ED70701}"
+    $UsbClass3 = "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices\\{F33FDC04-D1AC-4E8E-9A30-19BBD4B108AE}"
+    foreach ($UsbClassPath in @($UsbClass1, $UsbClass2, $UsbClass3)) {
+        if (!(Test-Path $UsbClassPath)) { New-Item -Path $UsbClassPath -Force | Out-Null }
+        Set-RegKey -Path $UsbClassPath -Name "Deny_Read"  -Value 1
+        Set-RegKey -Path $UsbClassPath -Name "Deny_Write" -Value 1
+    }
     ` : `
     Write-Host "    -> Restoring USB Storage Access (User Policy)..." -ForegroundColor Green
-    Remove-RegKey -Path "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices"
+    # Remove the specific class GUID keys (not the whole RemovableStorageDevices key,
+    # in case other policies exist there)
+    Remove-RegKey -Path "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices\\{53f5630d-b6bf-11d0-94f2-00a0c91efb8b}"
+    Remove-RegKey -Path "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices\\{6AC27878-A6FA-4155-BA85-F9857ED70701}"
+    Remove-RegKey -Path "$HiveRoot\\Software\\Policies\\Microsoft\\Windows\\RemovableStorageDevices\\{F33FDC04-D1AC-4E8E-9A30-19BBD4B108AE}"
     `}
 
     # --- DYNAMIC DISALLOW RUN (Smart Blocking) ---
@@ -506,17 +515,54 @@ foreach ($User in $TargetUsers) {
 Write-Host ""
 Write-Host "--- Configuring Machine-Wide Policies ---" -ForegroundColor Cyan
 
-# Store Policy (RemoveWindowsStore only enforced on Enterprise/Education editions;
-# For Home/Pro, the DisallowRun fallback blocks Store executables at user level)
+# Store Block — Multi-Layer (works on Home, Pro, Enterprise, Education)
+# Layer 1: Registry  — DisableStoreApps blocks installs on ALL editions
+#                      RemoveWindowsStore hides Store on Enterprise/Education
+# Layer 2: Services  — StoreSvc (install), wsappx (runtime)
+# Layer 3: Firewall  — outbound block on Store network endpoints
 ${isLock && system.blockStore ? `
-Write-Host "[*] Disabling Windows Store & Consumer Features..." -ForegroundColor Yellow
-Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore" -Value 1
-# Also block "Consumer Features" (Candy Crush, etc. auto-installs)
+Write-Host "[*] Blocking Microsoft Store (Multi-Layer: registry + services + firewall)..." -ForegroundColor Yellow
+
+# --- Layer 1: Registry Policies ---
+Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"    -Value 1
+Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore"  -Value 1
 Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" -Name "DisableWindowsConsumerFeatures" -Value 1
+
+# --- Layer 2: Disable Store Services ---
+# StoreSvc  = Windows Store Install Service (handles installs and updates)
+# wsappx    = UWP runtime host process — prevents Store from running
+$StoreSvcs = @("StoreSvc","wsappx")
+foreach ($svc in $StoreSvcs) {
+    if (Get-Service -Name $svc -ErrorAction SilentlyContinue) {
+        Write-Host "    -> Disabling service: $svc" -ForegroundColor Gray
+        Stop-Service  -Name $svc -Force          -ErrorAction SilentlyContinue
+        Set-Service   -Name $svc -StartupType Disabled -ErrorAction SilentlyContinue
+    }
+}
+
+# --- Layer 3: Outbound Firewall Rules ---
+Remove-NetFirewallRule -DisplayName "WLS-BlockStore"     -ErrorAction SilentlyContinue
+Remove-NetFirewallRule -DisplayName "WLS-BlockStoreHost" -ErrorAction SilentlyContinue
+$StoreAddrs = @("storeedgefd.dsx.mp.microsoft.com","purchase.mp.microsoft.com","displaycatalog.mp.microsoft.com")
+New-NetFirewallRule -DisplayName "WLS-BlockStoreHost" -Direction Outbound -Action Block -Profile Any -Enabled True -RemoteAddress $StoreAddrs -ErrorAction SilentlyContinue | Out-Null
+Write-Host "    -> Store blocked at registry, service, and firewall layers." -ForegroundColor Green
 ` : `
-Write-Host "[*] Restoring Windows Store Policy..." -ForegroundColor Green
+Write-Host "[*] Restoring Windows Store..." -ForegroundColor Green
+# Remove registry policies
+Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore"
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" -Name "DisableWindowsConsumerFeatures"
+# Re-enable services
+$StoreSvcs = @("StoreSvc","wsappx")
+foreach ($svc in $StoreSvcs) {
+    if (Get-Service -Name $svc -ErrorAction SilentlyContinue) {
+        Set-Service   -Name $svc -StartupType Manual -ErrorAction SilentlyContinue
+        Start-Service -Name $svc                     -ErrorAction SilentlyContinue
+    }
+}
+# Remove firewall rules
+Remove-NetFirewallRule -DisplayName "WLS-BlockStore"     -ErrorAction SilentlyContinue
+Remove-NetFirewallRule -DisplayName "WLS-BlockStoreHost" -ErrorAction SilentlyContinue
 `}
 
 # Anti-Bypass (UAC Hardening)
