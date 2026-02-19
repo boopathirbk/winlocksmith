@@ -521,48 +521,43 @@ Write-Host "--- Configuring Machine-Wide Policies ---" -ForegroundColor Cyan
 # Layer 2: Services  — StoreSvc (install), wsappx (runtime)
 # Layer 3: Firewall  — outbound block on Store network endpoints
 ${isLock && system.blockStore ? `
-Write-Host "[*] Blocking Microsoft Store (Multi-Layer: registry + services + firewall)..." -ForegroundColor Yellow
+Write-Host "[*] Blocking Microsoft Store for standard users..." -ForegroundColor Yellow
 
-# --- Layer 1: Registry Policies ---
-Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"    -Value 1
-Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore"  -Value 1
+# --- Layer 1: Registry Policies (prevents new installs via policy) ---
+Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"   -Value 1
+Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore" -Value 1
 Set-RegKey -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" -Name "DisableWindowsConsumerFeatures" -Value 1
 
-# --- Layer 2: Disable Store Services ---
-# StoreSvc  = Windows Store Install Service (handles installs and updates)
-# wsappx    = UWP runtime host process — prevents Store from running
-$StoreSvcs = @("StoreSvc","wsappx")
-foreach ($svc in $StoreSvcs) {
-    if (Get-Service -Name $svc -ErrorAction SilentlyContinue) {
-        Write-Host "    -> Disabling service: $svc" -ForegroundColor Gray
-        Stop-Service  -Name $svc -Force          -ErrorAction SilentlyContinue
-        Set-Service   -Name $svc -StartupType Disabled -ErrorAction SilentlyContinue
+# --- Layer 2: Remove Store AppxPackage per standard user (PRIMARY BLOCK) ---
+# Removes the Store UWP registration from each standard user's profile.
+# Admins are in $TargetUsers' exclusion list — their Store is never touched.
+Write-Host "    -> Removing Store AppxPackage for standard users..." -ForegroundColor Yellow
+foreach ($StoreUser in $TargetUsers) {
+    $UserSID = $StoreUser.SID.Value
+    $Pkg = Get-AppxPackage -User $UserSID -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue
+    if ($Pkg) {
+        Write-Host "       Removing for: $($StoreUser.Name)" -ForegroundColor Gray
+        Remove-AppxPackage -Package $Pkg.PackageFullName -User $UserSID -ErrorAction SilentlyContinue
     }
 }
-
-# --- Layer 3: Outbound Firewall Rules ---
-Remove-NetFirewallRule -DisplayName "WLS-BlockStore"     -ErrorAction SilentlyContinue
-Remove-NetFirewallRule -DisplayName "WLS-BlockStoreHost" -ErrorAction SilentlyContinue
-$StoreAddrs = @("storeedgefd.dsx.mp.microsoft.com","purchase.mp.microsoft.com","displaycatalog.mp.microsoft.com")
-New-NetFirewallRule -DisplayName "WLS-BlockStoreHost" -Direction Outbound -Action Block -Profile Any -Enabled True -RemoteAddress $StoreAddrs -ErrorAction SilentlyContinue | Out-Null
-Write-Host "    -> Store blocked at registry, service, and firewall layers." -ForegroundColor Green
+Write-Host "    -> Store blocked for standard users. Admin account unaffected." -ForegroundColor Green
 ` : `
-Write-Host "[*] Restoring Windows Store..." -ForegroundColor Green
+Write-Host "[*] Restoring Windows Store for standard users..." -ForegroundColor Green
 # Remove registry policies
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "DisableStoreApps"
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\WindowsStore" -Name "RemoveWindowsStore"
 Remove-RegValue -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent" -Name "DisableWindowsConsumerFeatures"
-# Re-enable services
-$StoreSvcs = @("StoreSvc","wsappx")
-foreach ($svc in $StoreSvcs) {
-    if (Get-Service -Name $svc -ErrorAction SilentlyContinue) {
-        Set-Service   -Name $svc -StartupType Manual -ErrorAction SilentlyContinue
-        Start-Service -Name $svc                     -ErrorAction SilentlyContinue
+# Re-register Store AppxPackage for each standard user
+$GlobalStorePkg = Get-AppxPackage -AllUsers -Name "Microsoft.WindowsStore" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($GlobalStorePkg) {
+    foreach ($StoreUser in $TargetUsers) {
+        $UserSID = $StoreUser.SID.Value
+        Write-Host "    -> Restoring Store for: $($StoreUser.Name)" -ForegroundColor Gray
+        Add-AppxPackage -DisableDevelopmentMode -Register "$($GlobalStorePkg.InstallLocation)\\AppxManifest.xml" -ErrorAction SilentlyContinue
     }
+} else {
+    Write-Host "    [!] Store package not found globally. Run 'wsreset.exe' as admin to reinstall." -ForegroundColor Yellow
 }
-# Remove firewall rules
-Remove-NetFirewallRule -DisplayName "WLS-BlockStore"     -ErrorAction SilentlyContinue
-Remove-NetFirewallRule -DisplayName "WLS-BlockStoreHost" -ErrorAction SilentlyContinue
 `}
 
 # Anti-Bypass (UAC Hardening)
