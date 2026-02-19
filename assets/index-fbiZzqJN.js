@@ -827,6 +827,18 @@ $SRP = "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers"
 ${u&&p.blockExecutables?`
 if (-not $IsHome) {
     Write-Host "[*] Applying Software Restriction Policies (Pro/Ent Only)..." -ForegroundColor Yellow
+
+    # --- Smart App Control (SAC) Compatibility Check ---
+    # On Windows 11, SAC overrides SRP when it is 'On' or in 'Evaluation' mode.
+    # SAC state is stored at HKLM:SYSTEMCurrentControlSetControlCIPolicy -> VerifiedAndReputablePolicyState
+    #   0 = Off, 1 = Evaluation, 2 = On
+    $SACState = (Get-ItemProperty -Path "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CI\\Policy" -Name "VerifiedAndReputablePolicyState" -ErrorAction SilentlyContinue).VerifiedAndReputablePolicyState
+    if ($SACState -eq 1 -or $SACState -eq 2) {
+        Write-Host "    [!] WARNING: Smart App Control is active (state=$SACState)." -ForegroundColor Magenta
+        Write-Host "        SRP may be IGNORED on this Windows 11 machine while SAC is on/evaluating." -ForegroundColor Magenta
+        Write-Host "        To enable SRP: turn off Smart App Control in Windows Security > App & Browser Control." -ForegroundColor Magenta
+    }
+
     Set-RegKey -Path $SRP -Name "TransparentEnabled" -Value 1
     Set-RegKey -Path $SRP -Name "PolicyScope" -Value 1
 
