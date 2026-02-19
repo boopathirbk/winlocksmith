@@ -228,6 +228,30 @@ const Config: React.FC = () => {
                                 </fieldset>
                             )}
 
+                            <div className="border-t dark:border-zinc-800/50 border-zinc-200 pt-5 mt-5">
+                                <fieldset>
+                                    <legend className="text-sm font-semibold dark:text-white text-zinc-900 mb-1 flex items-center gap-2">
+                                        <ICONS.Puzzle className="w-4 h-4 text-sky-500" /> Allowed Extensions
+                                    </legend>
+                                    <p className="text-[11px] dark:text-zinc-500 text-zinc-500 mb-3 leading-relaxed">
+                                        All other extensions are blocked by default. Enter the Extension ID (found at the end of the Edge Add-ons store URL).
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <label htmlFor="extInput" className="sr-only">Enter Extension ID</label>
+                                        <input type="text" id="extInput" placeholder="odfafmcnoijglmoebfaceedidhcofobk" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-sky-500/50 focus:border-sky-500 transition-colors font-mono" onKeyDown={(e) => { if (e.key === 'Enter') { addExtension(e.currentTarget.value); e.currentTarget.value = ''; } }} />
+                                        <button onClick={() => { const el = document.getElementById('extInput') as HTMLInputElement; addExtension(el.value); el.value = ''; }} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
+                                    </div>
+                                    <div className="mt-2 space-y-1">
+                                        {state.web.allowedExtensions.map(id => (
+                                            <div key={id} className="flex justify-between items-center text-sm p-2.5 dark:bg-zinc-800/40 bg-zinc-50 rounded-lg border dark:border-sky-800/30 border-sky-200">
+                                                <span className="dark:text-zinc-300 text-zinc-700 font-mono text-[11px] truncate mr-2" title={id}>{id}</span>
+                                                <button onClick={() => removeExtension(id)} aria-label={`Remove extension ${id}`}><ICONS.XCircle className="w-4 h-4 dark:text-zinc-600 text-zinc-400 hover:text-rose-500 transition-colors" /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </fieldset>
+                            </div>
+
                             <div className="grid md:grid-cols-2 gap-3">
                                 <MiniToggle label="Block File Uploads" checked={state.web.blockFileUploads} onChange={(v: boolean) => updateWeb('blockFileUploads', v)} />
                                 {state.web.urlFilterMode === 'whitelist' && <MiniToggle label="Force Startup Pages" checked={state.web.forceStartup} onChange={(v: boolean) => updateWeb('forceStartup', v)} />}

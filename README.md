@@ -23,7 +23,7 @@ Turn Microsoft Edge into a secure, focused browser environment:
 - **Blocklist Mode**: Block specific domains while allowing everything else. Ships with **61 pre-loaded domains** (social media + file-upload sites) — delete any you want to allow.
 - **Preset Blocked Sites**: Includes Facebook, YouTube, TikTok, Instagram, Discord, WhatsApp, Reddit, X (Twitter), Google Drive, Dropbox, MEGA, WeTransfer, and 49 more — all removable.
 - **Safe Internal Pages**: `edge://*` and `chrome-extension://*` are always allowlisted so Edge's own UI never breaks.
-- **Extension Control**: Block all extensions by default (`ExtensionInstallBlocklist: *`).
+- **Extension Allowlist**: Block all extensions by default (`ExtensionInstallBlocklist: *`) while allowing specific ones by ID.
 - **Privacy First**: Disable InPrivate mode, developer tools, guest mode, and telemetry.
 - **PDF Security**: Control internal PDF viewer access via `AllowPdfView`.
 - **Force Startup URLs**: Lock the homepage and startup tabs to specific URLs (whitelist mode only).

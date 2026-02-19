@@ -92,16 +92,27 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
     ` : `# No blocked URLs configured — all sites accessible`}
     `}
 
-    # Block all Extensions
+    # Block all Extensions by default
     Remove-RegValue -Path "${EdgePol}" -Name "ExtensionInstallBlocklist"
     Remove-RegKey -Path "${EdgePol}\\ExtensionInstallBlocklist"
     if (!(Test-Path "${EdgePol}\\ExtensionInstallBlocklist")) { New-Item -Path "${EdgePol}\\ExtensionInstallBlocklist" -Force | Out-Null }
     Set-RegKey -Path "${EdgePol}\\ExtensionInstallBlocklist" -Name "1" -PropertyType "String" -Value "*"
 
-    # Clear old allowlists
-    Remove-RegKey -Path "${EdgePol}\\URLAllowlist"
+    # Extension Allowlist (Overrides Blocklist for specific IDs)
     Remove-RegKey -Path "${EdgePol}\\ExtensionInstallAllowlist"
+    if (@(${web.allowedExtensions.map(e => `"${sanitize(e)}"`).join(', ')}).Length -gt 0) {
+        if (!(Test-Path "${EdgePol}\\ExtensionInstallAllowlist")) { New-Item -Path "${EdgePol}\\ExtensionInstallAllowlist" -Force | Out-Null }
+        $ei = 1
+        $AllowedExtensions = @(${web.allowedExtensions.map(e => `"${sanitize(e)}"`).join(', ')})
+        foreach ($extId in $AllowedExtensions) {
+            Set-RegKey -Path "${EdgePol}\\ExtensionInstallAllowlist" -Name "$ei" -PropertyType "String" -Value $extId
+            $ei++
+        }
+    }
 
+    # Clear old URL allowlists before adding new ones
+    Remove-RegKey -Path "${EdgePol}\\URLAllowlist"
+    
     ${web.urlFilterMode === 'whitelist' ? `
     # [Whitelist Mode] Add edge://* first (required — prevents Edge internal pages from breaking)
     # Then add user-specified allowed URLs
@@ -112,14 +123,6 @@ const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: st
         $i++
     }
     ` : ``}
-
-    # Add new allowed Extensions
-    $j = 1
-    $AllowedExtensions = @(${web.allowedExtensions.map(id => `"${sanitize(id)}"`).join(',')})
-    foreach ($ext in $AllowedExtensions) {
-        Set-RegKey -Path "${EdgePol}\\ExtensionInstallAllowlist" -Name "$j" -PropertyType "String" -Value $ext
-        $j++
-    }
     
     ${web.allowPdfView ? `
     # Enable Internal PDF Viewer
@@ -680,15 +683,15 @@ if(Test-Path "$SRP\\0\\Paths") { Remove-Item "$SRP\\0\\Paths\\*" -Recurse -Force
 if(Test-Path "$SRP\\262144\\Paths") { Remove-Item "$SRP\\262144\\Paths\\*" -Recurse -Force -ErrorAction SilentlyContinue }
 `}
 
-Write - Host "Restarting Explorer..." - ForegroundColor DarkGray
-Stop - Process - Name explorer - Force - ErrorAction SilentlyContinue
-Start - Sleep - Seconds 2
+Write-Host "Restarting Explorer..." -ForegroundColor DarkGray
+Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
 
-# -- - VERIFICATION REPORT-- -
-    Write - Host ""
-Write - Host "==========================================" - ForegroundColor Cyan
-Write - Host "      VERIFICATION REPORT (ACTIVE)        " - ForegroundColor Cyan
-Write - Host "==========================================" - ForegroundColor Cyan
+# --- VERIFICATION REPORT ---
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "      VERIFICATION REPORT (ACTIVE)        " -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
 ${isLock ? `
 ${system.blockUsb ?
                 'Write-Host "[+] USB Storage:          BLOCKED (Standard Users)" -ForegroundColor Green' :
@@ -729,8 +732,8 @@ if ($IsHome) { Write-Host "[!] Note: Used \'ICACLS\' to secure Home Edition user
 ` : `
 Write-Host "All restrictions have been removed." -ForegroundColor Green
 `}
-Write - Host "==========================================" - ForegroundColor Cyan
-Write - Host "DONE." - ForegroundColor Green
-Read - Host "Press Enter to exit..."
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "DONE." -ForegroundColor Green
+Read-Host "Press Enter to exit..."
     `;
 }
