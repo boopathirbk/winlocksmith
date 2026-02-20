@@ -143,7 +143,6 @@ export const INITIAL_STATE = {
       // --- File Upload & Cloud Storage Sites ---
       'drive.google.com',
       'dropbox.com',
-      'onedrive.live.com',
       'icloud.com',
       'mega.nz',
       'wetransfer.com',
@@ -173,8 +172,6 @@ export const INITIAL_STATE = {
       'collabow.io',
       // --- Social Media Sites ---
       'facebook.com',
-      'youtube.com',
-      'whatsapp.com',
       'instagram.com',
       'tiktok.com',
       'wechat.com',
