@@ -15,7 +15,7 @@ const FAQ_DATA: FAQItem[] = [
     { q: "What Windows versions are supported?", a: "Windows 10 (1809+) and Windows 11 (all builds). Both 64-bit and 32-bit are supported. ARM64 devices like Surface Pro X also work.", category: "Getting Started" },
     { q: "Is this a replacement for Microsoft Intune?", a: "For small teams, labs, and kiosks — yes. WinLocksmith covers 80% of what Intune does for device lockdown, without the $8/user/month cost. For enterprise-scale fleet management with compliance reporting, Intune is still more appropriate.", category: "Getting Started" },
     { q: "Can I use this on a personal computer?", a: "Absolutely. It's great for parental controls, shared family PCs, or just hardening your own machine against malware.", category: "Getting Started" },
-    { q: "Is WinLocksmith free?", a: "Yes, 100% free and open source under the MIT License. No premium tiers, no feature gating, no ads.", category: "Getting Started" },
+    { q: "Is WinLocksmith free?", a: "Yes, 100% free and open source under the Apache License 2.0. No premium tiers, no feature gating, no ads.", category: "Getting Started" },
     { q: "Does it work offline?", a: "Yes. Once the page loads, everything runs client-side in your browser. You can even save the page for fully offline use.", category: "Getting Started" },
 
     // === Installation & Running ===

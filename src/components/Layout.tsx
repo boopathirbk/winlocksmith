@@ -58,6 +58,7 @@ const Layout: React.FC = () => {
     const navLinks = [
         { path: '/', label: 'Home' },
         { path: '/config', label: 'Configure' },
+        { path: '/guide', label: 'Guide' },
         { path: '/faq', label: 'FAQ' },
         { path: '/author', label: 'Author' },
     ];
@@ -110,6 +111,12 @@ const Layout: React.FC = () => {
                         >
                             <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star{starCount !== null && <span className="ml-0.5 tabular-nums">{starCount.toLocaleString()}</span>}
                         </a>
+                        <a href="https://buymeacoffee.com/boopathirbk" target="_blank" rel="noopener noreferrer"
+                            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 bg-[#FFDD00] hover:bg-[#FFDD00]/85 text-zinc-900 border border-[#FFDD00]/60 shadow-sm hover:shadow"
+                            aria-label="Buy me a coffee (opens in new tab)"
+                        >
+                            <ICONS.Coffee className="w-3.5 h-3.5" aria-hidden="true" /> Buy me a coffee
+                        </a>
                         <Link to="/donate"
                             className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${isDarkMode ? 'text-rose-400 bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20' : 'text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200'}`}
                             aria-label="Support WinLocksmith"
@@ -155,6 +162,9 @@ const Layout: React.FC = () => {
                         <div className="border-t dark:border-zinc-800/30 border-zinc-200 my-1 pt-1 flex gap-2 px-1">
                             <a href="https://github.com/boopathirbk/winlocksmith" target="_blank" rel="noopener noreferrer" className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${isDarkMode ? 'text-zinc-400 border-zinc-800 hover:bg-zinc-800/50' : 'text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>
                                 <ICONS.Star className="w-3.5 h-3.5" aria-hidden="true" /> Star{starCount !== null && <span className="ml-0.5 tabular-nums">{starCount.toLocaleString()}</span>}
+                            </a>
+                            <a href="https://buymeacoffee.com/boopathirbk" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors bg-[#FFDD00] hover:bg-[#FFDD00]/85 text-zinc-900 border border-[#FFDD00]/60" aria-label="Buy me a coffee">
+                                <ICONS.Coffee className="w-3.5 h-3.5" aria-hidden="true" /> Coffee
                             </a>
                             <Link to="/donate" className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isDarkMode ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20' : 'text-rose-600 bg-rose-50 border border-rose-200'}`}>
                                 <ICONS.Heart className="w-3.5 h-3.5" aria-hidden="true" /> Donate

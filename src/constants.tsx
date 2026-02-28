@@ -44,7 +44,13 @@ import {
   Mail,
   MapPin,
   Heart,
-  Star
+  Star,
+  Coffee,
+  BookOpen,
+  Leaf,
+  ArrowRight,
+  Zap,
+  FileText
 } from 'lucide-react';
 
 
@@ -95,6 +101,12 @@ export const ICONS = {
   MapPin,
   Heart,
   Star,
+  Coffee,
+  BookOpen,
+  Leaf,
+  ArrowRight,
+  Zap,
+  FileText,
 };
 
 export const COMMON_BROWSERS = [

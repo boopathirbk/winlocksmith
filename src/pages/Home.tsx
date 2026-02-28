@@ -117,6 +117,47 @@ const Home: React.FC = () => {
                         ))}
                     </div>
                 </section>
+
+                {/* Trust & Verification */}
+                <section aria-labelledby="trust-heading">
+                    <div className="text-center mb-10">
+                        <h2 id="trust-heading" className="text-3xl font-bold dark:text-white text-zinc-900 tracking-tight">Verified & Secure</h2>
+                        <p className="mt-3 dark:text-zinc-400 text-zinc-600 text-base">Every line of generated code has been audited for correctness and safety.</p>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                            {
+                                icon: <ICONS.Shield className="w-5 h-5 text-emerald-500" />,
+                                title: 'Open Source Audited',
+                                desc: 'Full source code on GitHub. Every script is transparent and inspectable.',
+                            },
+                            {
+                                icon: <ICONS.EyeOff className="w-5 h-5 text-sky-500" />,
+                                title: 'Zero Data Collection',
+                                desc: 'Runs 100% client-side. No analytics, no telemetry, no tracking.',
+                            },
+                            {
+                                icon: <ICONS.Lock className="w-5 h-5 text-violet-500" />,
+                                title: 'Injection-Safe',
+                                desc: 'All user input is sanitized against PowerShell injection attacks.',
+                            },
+                            {
+                                icon: <ICONS.RotateCcw className="w-5 h-5 text-rose-500" />,
+                                title: 'Fully Reversible',
+                                desc: 'Registry-only policies. No destructive changes. Undo everything instantly.',
+                            },
+                        ].map((item, i) => (
+                            <div key={i} className="text-center p-5 rounded-2xl dark:bg-zinc-900/40 bg-white border dark:border-zinc-800/50 border-zinc-200 transition-all duration-300 hover:dark:border-zinc-700/60 hover:border-zinc-300 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-none">
+                                <div className="w-11 h-11 rounded-xl dark:bg-zinc-800 bg-zinc-100 flex items-center justify-center mx-auto mb-4" aria-hidden="true">
+                                    {item.icon}
+                                </div>
+                                <h3 className="text-sm font-semibold dark:text-white text-zinc-900 mb-1.5">{item.title}</h3>
+                                <p className="text-xs dark:text-zinc-500 text-zinc-500 leading-relaxed">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
             </div>
         </div>
     );

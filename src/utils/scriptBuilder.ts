@@ -44,8 +44,8 @@ export const generatePowerShellScript = (config: AppState, mode: ScriptMode): st
 const generateRefinedScript = (config: AppState, mode: ScriptMode, timestamp: string, isLock: boolean) => {
     const { system, web, advanced, kiosk } = config;
 
-    // Helper to sanitize input for PowerShell strings (escapes double quotes)
-    const sanitize = (str: string) => str.replace(/"/g, '`"');
+    // Helper to sanitize input for PowerShell strings (prevents injection via $(), `, and ")
+    const sanitize = (str: string) => str.replace(/`/g, '``').replace(/\$/g, '`$').replace(/"/g, '`"');
 
     // --- EDGE CONFIGURATION ---
     let edgeScript = "";

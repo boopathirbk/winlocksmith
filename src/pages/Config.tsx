@@ -133,6 +133,9 @@ const Config: React.FC = () => {
                         <ToggleCard title="Microsoft Store" icon={ICONS.LayoutTemplate} accent="violet" checked={state.system.blockStore} onChange={(v: boolean) => updateSystem('blockStore', v)} description="Block Store and consumer features." />
                         <ToggleCard title="Block Executables" icon={ICONS.Shield} accent="rose" checked={state.system.blockExecutables} onChange={(v: boolean) => updateSystem('blockExecutables', v)} description="Prevent running downloaded executables (SRP)." />
                     </div>
+                    {state.system.blockExecutables && (
+                        <MiniToggle label="Strict Mode — Block all except System & Program Files" checked={state.system.strictMode} onChange={(v: boolean) => updateSystem('strictMode', v)} />
+                    )}
                 </section>
 
                 {/* Kiosk */}
@@ -262,6 +265,9 @@ const Config: React.FC = () => {
                         </div>
                     )}
 
+                    {/* Block Other Browsers */}
+                    <ToggleCard title="Block Other Browsers" icon={ICONS.Ban} accent="rose" checked={state.web.blockOtherBrowsers} onChange={(v: boolean) => updateWeb('blockOtherBrowsers', v)} description="Block Chrome, Firefox, Brave, Opera, Vivaldi, and Tor. Only Edge will be usable." />
+
                     {/* Force Safe DNS */}
                     <ToggleCard
                         title="Force Safe DNS"
@@ -289,7 +295,34 @@ const Config: React.FC = () => {
                         <ToggleCard title="Disable Task Manager" icon={ICONS.Activity} accent="amber" checked={state.advanced.blockTaskMgr} onChange={(v: boolean) => updateAdvanced('blockTaskMgr', v)} description="Block Task Manager access." />
                         <ToggleCard title="Disable CMD/PowerShell" icon={ICONS.Terminal} accent="amber" checked={state.advanced.blockCmdPowershell} onChange={(v: boolean) => updateAdvanced('blockCmdPowershell', v)} description="Block Command Prompt." />
                         <ToggleCard title="Block Settings App" icon={ICONS.Settings} accent="amber" checked={state.advanced.blockSettings} onChange={(v: boolean) => updateAdvanced('blockSettings', v)} description="Block Settings access." />
+                        <ToggleCard title="Block Control Panel" icon={ICONS.Sliders} accent="amber" checked={state.advanced.blockControlPanel} onChange={(v: boolean) => updateAdvanced('blockControlPanel', v)} description="Block classic Control Panel access." />
+                        <ToggleCard title="Block Registry Editor" icon={ICONS.Lock} accent="rose" checked={state.advanced.blockRegistryTools} onChange={(v: boolean) => updateAdvanced('blockRegistryTools', v)} description="Prevent access to RegEdit." />
+                        <ToggleCard title="Block Specific Apps" icon={ICONS.Ban} accent="rose" checked={state.advanced.blockSpecificApps} onChange={(v: boolean) => updateAdvanced('blockSpecificApps', v)} description="Ban specific executables by name." />
                     </div>
+                    {state.advanced.blockSpecificApps && (
+                        <fieldset className="dark:bg-zinc-900/40 bg-white dark:border-zinc-800/40 border-zinc-200 border rounded-xl p-5 space-y-3">
+                            <legend className="text-sm font-semibold dark:text-white text-zinc-900 mb-1 flex items-center gap-2">
+                                <ICONS.Ban className="w-4 h-4 text-rose-500" /> Blocked Applications
+                            </legend>
+                            <p className="text-[11px] dark:text-zinc-500 text-zinc-500 leading-relaxed">
+                                Enter executable names (e.g. discord.exe, steam.exe). These will be blocked via DisallowRun policy.
+                            </p>
+                            <div className="flex gap-2">
+                                <label htmlFor="appInput" className="sr-only">Enter application executable name</label>
+                                <input type="text" id="appInput" placeholder="discord.exe" className="flex-1 dark:bg-zinc-800/60 bg-zinc-50 border dark:border-zinc-700/50 border-zinc-300 rounded-lg px-3.5 py-2 text-sm dark:text-zinc-200 text-zinc-800 placeholder:dark:text-zinc-600 placeholder:text-zinc-400 outline-none focus:dark:border-rose-500/50 focus:border-rose-500 transition-colors font-mono" onKeyDown={(e) => { if (e.key === 'Enter') { addBlockedApp(e.currentTarget.value); e.currentTarget.value = ''; } }} />
+                                <button onClick={() => { const el = document.getElementById('appInput') as HTMLInputElement; addBlockedApp(el.value); el.value = ''; }} className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-medium transition-colors">Add</button>
+                            </div>
+                            <div className="space-y-1">
+                                {state.advanced.blockedAppList.map(app => (
+                                    <div key={app} className="flex justify-between items-center text-sm p-2.5 dark:bg-zinc-800/40 bg-zinc-50 rounded-lg border dark:border-rose-800/30 border-rose-200">
+                                        <span className="dark:text-zinc-300 text-zinc-700 font-mono text-xs">{app}</span>
+                                        <button onClick={() => removeBlockedApp(app)} aria-label={`Remove ${app}`}><ICONS.XCircle className="w-4 h-4 dark:text-zinc-600 text-zinc-400 hover:text-rose-500 transition-colors" /></button>
+                                    </div>
+                                ))}
+                                {state.advanced.blockedAppList.length === 0 && <p className="text-xs dark:text-zinc-600 text-zinc-500 italic px-1">No apps blocked — add executable names above.</p>}
+                            </div>
+                        </fieldset>
+                    )}
                 </section>
             </div>
 

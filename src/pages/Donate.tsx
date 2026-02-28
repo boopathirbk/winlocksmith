@@ -101,6 +101,16 @@ const Donate: React.FC = () => {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                         <a
+                            href="https://buymeacoffee.com/boopathirbk"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#FFDD00] hover:bg-[#FFDD00]/85 text-zinc-900 rounded-xl font-semibold text-sm shadow-lg shadow-[#FFDD00]/20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                            aria-label="Buy me a coffee (opens in new tab)"
+                        >
+                            <ICONS.Coffee className="w-4 h-4" aria-hidden="true" />
+                            Buy me a coffee
+                        </a>
+                        <a
                             href="https://paypal.me/boopathirbk"
                             target="_blank"
                             rel="noopener noreferrer"
